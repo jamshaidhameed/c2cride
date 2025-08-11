@@ -1,0 +1,314 @@
+<?php
+
+function generateBookingNumber($source, $destination, $car, $rideType, $way)
+{
+    try {
+        $source_array = explode('-', $source);
+        $source_city = count($source_array) > 2 ? trim($source_array[count($source_array) - 2]) : $source_array[0];
+
+        $source_number = 0;
+        $source_cities = [
+            'khor fakkan' => 1,
+            'abu dhabi' => 2,
+            'al ain' => 3,
+            'dubai' => 4,
+            'ajman' => 5,
+            'sharjah' => 6,
+            'ras al khaimah' => 7,
+            'umm al quwain' => 8,
+            'fujairah' => 9
+        ];
+        $source_number = $source_cities[strtolower($source_city)];
+
+        $destination_array = explode('-', $destination);
+        $destination_city = count($destination_array) > 2 ? trim($destination_array[count($destination_array) - 2]) : $destination_array[0];
+
+        $destination_number = 0;
+        $destination_cities = [
+            'khor fakkan' => 1,
+            'abu dhabi' => 2,
+            'al ain' => 3,
+            'dubai' => 4,
+            'ajman' => 5,
+            'sharjah' => 6,
+            'ras al khaimah' => 7,
+            'umm al quwain' => 8,
+            'fujairah' => 9
+        ];
+        $destination_number = !empty($destination_cities[strtolower($destination_city)]) ? $destination_cities[strtolower($destination_city)] : 1;
+
+        // $destination_number = $destination_city;
+
+        //check car type
+        $car_types = [
+            'economy' => 1,
+            'comfort' => 2,
+            'business' => 3,
+            'suv' => 4,
+            'ex-suv' => 5
+        ];
+        $car_type = strtolower($car);
+
+        //check ride type
+        $ride_types = [
+            'city' => [
+                '1' => 1,
+                '2' => 2
+            ],
+            'airport' => [
+                '1' => 3,
+                '2' => 4
+            ]
+        ];
+        $ride_type = strtolower($rideType);
+
+        //C2C or airport
+        $city_airport = ($rideType === 'city') ? 1 : 2;
+
+        $four_digit_code = mt_rand(100000000,999999999);
+        // getFourDigitCode();
+
+        return $source_number . $destination_number .  $city_airport . $four_digit_code;
+    } catch (Exception $e) {
+        // Handle any potential exceptions here
+        // Return a default value or a similar code
+        return mt_rand(100000000,999999999);
+    }
+}
+
+function getFourDigitCode()
+{
+    $characters = '1234567890';
+    $random = array(); //remember to declare $pass as an array
+    $characterLength = strlen($characters) - 1; //put the length -1 in cache
+    for ($i = 0; $i < 4; $i++) {
+        $n = rand(0, $characterLength);
+        $random[] = $characters[$n];
+    }
+    $code = implode($random); //turn the array into a string
+    return $code; //turn the array into a string
+}
+
+function getRideStatus($ride)
+{
+
+    $status = '';
+    if ($ride->status === '1') {
+        $status = 'Completed';
+    } else if ($ride->status === '2') {
+        $status = 'Pending';
+    } else if ($ride->status === '3') {
+        $status = 'Cancelled';
+    } else if ($ride->status === '4') {
+        $status = 'Confirmed';
+    }
+
+    return $status;
+}
+function currenyformat($amount)
+{
+    return number_format($amount, 2);
+}
+
+ function weekintodays($weeks){
+    return 7*$weeks;
+}
+
+if (!function_exists('send_email')) {
+    function send_email($to_email, $subject, $template, $data)
+    {
+//         dd($to_email);
+        Mail::send($template, ['user' => $data], function ($message) use ($subject, $to_email) {
+            $message->to($to_email, $subject)->subject($subject);
+            $message->from('support@c2crides.com', $subject);
+        });
+    }
+}
+function sendmail($to, $subject, $message, $from = 'info@2minutespsychology.com')
+{
+//    dd($to);
+    $headers = "MIME-Version: 1.0" . "\r\n";
+    $headers .= "Content-type:text/html;charset=iso-8859-1" . "\r\n";
+    $headers .= 'From: ' . $from . "\r\n";
+    $headers .= 'Reply-To: ' . $from . "\r\n";
+    $headers .= 'X-Mailer: PHP/' . phpversion();
+    @mail($to, $subject, $message, $headers);
+}
+
+function return_discount($return_price){
+    $discount_rate = 90 / 100;
+    $original_price = $return_price * $discount_rate;
+    return $original_price;
+}
+
+function isThisAirportRide($source, $destination) {
+    if (isAirportRide($source) || isAirportRide($destination) ||
+        stripos($destination, 'terminal') !== false ||
+        stripos($destination, 'airport') !== false) {
+        return true;
+    }
+    return false;
+}
+
+function isAirportRide($inputString) {
+    // $regex = '/\([A-Za-z]{3}\)/'; // Regular expression to match (followed by 3 alphabets followed by )
+    $regex = "/\b(airport|terminal)\b/";
+    // return preg_match($regex, $inputString);
+    return preg_match('/\b(airport|terminal)\b/i', $inputString);
+}
+
+function calculate_distance($source, $destination)
+    {
+        try {
+
+            // https://maps.googleapis.com/maps/api/distancematrix/json
+            
+            $response = Http::get('https://maps.googleapis.com/maps/api/distancematrix/json', [
+            'origins' => $source,
+            'destinations' => $destination,
+            'departure_time' => 'now',
+            'traffic_model' => 'best_guess',
+            'mode' => 'driving',
+            'units' => 'metric',
+            'avoidHighways' => false,
+            'avoidTolls' => false,
+            'key' => 'AIzaSyAjb2hexnJxmJNktoaBX5cdvk12GKdzwMY', // Your Google Maps API Key
+        ]);
+
+        if ($response->successful()) {
+            $data = $response->json();
+
+            if ($data['status'] === 'OK') {
+                foreach ($data['rows'] as $row) {
+                    foreach ($row['elements'] as $element) {
+                        if ($element['status'] === 'OK') {
+                            $distance = $element['distance']['text'] ?? '0 km';
+                            $duration = $element['duration']['text'] ?? '0 mins';
+
+
+                            // Extract numerical value from distance
+                            $distanceValue = (float) explode(' ', $distance)[0];
+
+                            return [
+                                'distance' => $distanceValue,
+                                'duration' => $duration,
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        return response()->json(['error' => 'Unable to calculate distance'], 422);
+
+        } catch (\Throwable $th) {
+            
+            // return ['distance' => 0,'duration' => ''];
+            return null;
+        }
+    }
+
+//Calculate pricing for normal ride
+function rides_pricing($car_type,$distance,$airportRide){
+  
+    $base_price = $car_type->fixed_price;
+    $ride_amount = 0;
+
+    if ($distance <= 20) {
+        $ride_amount = $base_price;
+    }elseif ($distance > 20 && $distance <= 30) {
+        
+        $ride_amount = $distance * $car_type->above_twenty;
+    }elseif ($distance > 30 && $distance <= 50) {
+        
+        $ride_amount = $distance * $car_type->above_thirty;
+    }
+    elseif ($distance > 50 && $distance <= 70) {
+        
+        $ride_amount = $distance * $car_type->above_fifty;
+    }elseif ($distance > 70 && $distance <= 100) {
+        
+        $ride_amount = $distance * $car_type->above_seventy;
+    }elseif ($distance > 100 && $distance <= 130) {
+        
+        $ride_amount = $distance * $car_type->above_hundred;
+    }elseif ($distance > 130) {
+        
+        $ride_amount = $distance * $car_type->above_hundred_thirty;
+    }
+
+    if ($ride_amount < $car_type->fixed_price) {
+        
+        $ride_amount = $car_type->fixed_price;
+    }
+
+    if ($airportRide) {
+        
+        $ride_amount += $car_type->ariport_additional;
+    }
+
+    return $ride_amount;
+}
+
+//Calculate Hourly Ride Pricing
+function hourly_pricing($ride_pricing,$car_id,$hours){
+
+    $ride_price = 0;
+    $calculated_kms = 0;
+
+    
+
+    if ($ride_pricing->hourly_price) {
+        
+        if ($hours == 1) {
+            $ride_price =$ride_pricing->hourly_price;
+            $calculated_kms = 40;
+        } elseif ($hours == 2 ) {
+            
+           $ride_price =$ride_pricing->hourly_price + ($ride_pricing->increment * ($hours -1));
+           $calculated_kms = 80; 
+        }else{
+
+            $ride_price =$ride_pricing->hourly_price + ($ride_pricing->increment * ($hours -1));
+            $calculated_kms = $ride_pricing->km * $hours + 20; 
+        }
+    }
+
+    return ['ride_price' =>$ride_price,'kms' => $calculated_kms];
+}
+
+function citytour_pricing($ride_pricing,$hours){
+
+    $ride_price = 0;
+    
+    if ($hours == 5) {
+            
+        $ride_price = $ride_pricing->five_hour_price;
+    }else{
+         $ride_price = $ride_pricing->ten_hour_price;
+    }
+
+    return $ride_price;
+    
+
+
+}
+
+//Duration to minates
+
+function convertToMinutes($timeString) {
+    preg_match('/(\d+)\s*hour/', $timeString, $hours);
+    preg_match('/(\d+)\s*minute/', $timeString, $minutes);
+
+    $totalMinutes = 0;
+    if (!empty($hours[1])) {
+        $totalMinutes += $hours[1] * 60;
+    }
+    if (!empty($minutes[1])) {
+        $totalMinutes += $minutes[1];
+    }
+
+    return $totalMinutes;
+}
+
+

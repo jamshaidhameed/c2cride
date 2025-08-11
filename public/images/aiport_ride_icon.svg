@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="21.394" height="18.642" viewBox="0 0 21.394 18.642">
+  <g id="aiport-ride-icon" transform="translate(-591.042 -459.346)">
+    <g id="Group_72" data-name="Group 72">
+      <g id="Group_71" data-name="Group 71">
+        <path id="Path_71" data-name="Path 71" d="M591.042,469.178h2.885l.7-5.865h4.242l.2-3.946" fill="none" stroke="#000" stroke-width="0.75"/>
+        <path id="Path_72" data-name="Path 72" d="M593.926,469.178h5.288l-.332,8.314" fill="none" stroke="#000" stroke-width="0.75"/>
+        <path id="Path_73" data-name="Path 73" d="M612.436,467.194h-6.921l-.434-7.827" fill="none" stroke="#000" stroke-width="0.75"/>
+        <line id="Line_31" data-name="Line 31" x1="0.465" y1="10.347" transform="translate(603.37 459.366)" fill="none" stroke="#000" stroke-width="0.75"/>
+        <line id="Line_32" data-name="Line 32" x2="4.608" transform="translate(598.864 463.313)" fill="none" stroke="#000" stroke-width="0.75"/>
+        <line id="Line_33" data-name="Line 33" x1="1.944" transform="translate(603.571 467.194)" fill="none" stroke="#000" stroke-width="0.75"/>
+      </g>
+    </g>
+    <g id="Group_73" data-name="Group 73">
+      <path id="Path_74" data-name="Path 74" d="M604.835,475.449l-1.653-1.353.531-.481,1.533.742,2.364-2.6-2.795-2.013.681-.571,3.476,1.412,1.959-1.317a.554.554,0,0,1,.743.116h0a.555.555,0,0,1-.025.718l-1.525,1.665,1.283,3.727-.672.591L609,473.085l-2.935,2.213.752,1.553-.561.561Z" fill="none" stroke="#000" stroke-width="0.75"/>
+    </g>
+  </g>
+</svg>

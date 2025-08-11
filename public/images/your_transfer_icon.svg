@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="25.224" height="21.57" viewBox="0 0 25.224 21.57">
+  <g id="your-transfer-icon" transform="translate(-1402.642 -205.642)">
+    <text id="A" transform="translate(1403.142 215.642)" font-size="12.911" font-family="WorkSans-Regular, Work Sans"><tspan x="0" y="0">A</tspan></text>
+    <text id="B" transform="translate(1418.866 224.212)" font-size="12.911" font-family="WorkSans-Regular, Work Sans"><tspan x="0" y="0">B</tspan></text>
+    <path id="Path_142" data-name="Path 142" d="M1408.688,222.547h.178a6.739,6.739,0,0,0,6.74-6.74,6.749,6.749,0,0,1,5.654-6.655" fill="none" stroke="#000" stroke-width="1"/>
+    <circle id="Ellipse_17" data-name="Ellipse 17" cx="2.779" cy="2.779" r="2.779" transform="translate(1421.255 206.288)" fill="none" stroke="#000" stroke-width="1"/>
+    <circle id="Ellipse_18" data-name="Ellipse 18" cx="2.779" cy="2.779" r="2.779" transform="translate(1403.142 219.569)" fill="none" stroke="#000" stroke-width="1"/>
+  </g>
+</svg>

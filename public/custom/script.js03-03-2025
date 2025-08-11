@@ -1,0 +1,952 @@
+function isAirportRide(inputString) {
+  const regex = /\b(airport|terminal)\b/gi;
+  return regex.test(inputString);
+}
+$(document).on("click", ".btn-check-ride-fare", function (e) {
+  e.preventDefault();
+  $(".btn-check-ride-fare").addClass("disabled-button");
+  var next_url = $('input[name="step_two_url"]').val();
+  let status = true;
+  let form = $(".tab_rides");
+  $(".error_text").remove();
+  $(".floating-input").removeClass("error_stroke");
+
+  //rides_from validation
+  let rides_from = $("[name='rides_from']").val();
+  if ($.trim(rides_from) === "") {
+    $(form)
+      .find("[name='rides_from']")
+      .parent()
+      .after("<span class='error_text'>Select From Location</span>");
+    $(form).find("[name='rides_from']").addClass("error_stroke");
+    if (status === true) {
+      $(form).find("[name='rides_from']").focus();
+    }
+    status = false;
+  }
+  let rides_to = $("[name='rides_to']").val();
+  if ($.trim(rides_to) === "") {
+    $(form)
+      .find("[name='rides_to']")
+      .parent()
+      .after("<span class='error_text'>Select To Location</span>");
+    $(form).find("[name='rides_to']").addClass("error_stroke");
+    if (status == true) {
+      $(form).find("[name='rides_to']").focus();
+    }
+    status = false;
+  }
+
+  let rides_date = $(form).find("[name='rides_date']").val(),
+    rides_time = $(form).find("[name='rides_time']").val();
+
+  if (!timeValidationFunc(rides_date + " " + rides_time)) {
+    $(form)
+      .find("[name='rides_time']")
+      .parent()
+      .after(
+        "<span class='error_text'>The selected time should be ahead of current time.</span>"
+      );
+    $(form).find("[name='rides_time']").addClass("error_stroke");
+    status = false;
+  }
+
+  let rides_return_date = $("[name='rides_return_date']").val();
+  let rides_return_time = $("[name='rides_return_time']").val();
+
+  let is_return_ride = $('[name="is_return_ride"]').val();
+
+  if (is_return_ride == 1) {
+    if (rides_return_date.trim() === "") {
+      $(form)
+        .find("[name='rides_return_date']")
+        .parent()
+        .after('<span class="error_text">Plese Select Return Date</span>');
+      $(form).find("[name='rides_return_date']").addClass("error_stroke");
+      $(form).find("[name='rides_return_date']").focus();
+      status = false;
+    }
+    if (rides_return_time.trim() === "") {
+      $(form)
+        .find("[name='rides_return_time']")
+        .parent()
+        .after('<span class="error_text">Plese Select Return Time</span>');
+      $(form).find("[name='rides_return_time']").addClass("error_stroke");
+      if (status === true) {
+        $(form).find("[name='rides_return_time']").focus();
+      }
+      status = false;
+    }
+  }
+
+  var adults = $(form).find('[name="adults"]').val(),
+    children = $(form).find('[name="children"]').val(),
+    infants = $(form).find('[name="infants"]').val(),
+    total_passengers = $(form).find(".total-sum").val(),
+    ride_type_id = $(form).find('[name="ride_type_id"').val();
+
+  // let airport_ride = $('[name="air_port_ride"').val();
+
+  // if (airport_ride) {
+  //   if (!isAirportRide(rides_from)) {
+  //     $(form)
+  //       .find("[name='rides_from']")
+  //       .parent()
+  //       .after(
+  //         "<span class='error_text'>Please Select Airport Location</span>"
+  //       );
+  //     $(form).find("[name='rides_from']").addClass("error_stroke");
+  //     status = false;
+  //   }
+
+  //   if (!isAirportRide(rides_to)) {
+  //     $(form)
+  //       .find("[name='rides_to']")
+  //       .parent()
+  //       .after(
+  //         "<span class='error_text'>Please Select Airport location</span>"
+  //       );
+  //     $(form).find("[name='rides_to']").addClass("error_stroke");
+  //     status = false;
+  //   }
+  // }
+
+  // // if (rides_return_date && rides_return_time) {
+  // //   if (
+  // //     !timeValidationFunc(
+  // //       rides_date + " " + rides_time,
+  // //       rides_return_date + " " + rides_return_time
+  // //     )
+  // //   ) {
+  // //     $("[name='rides_return_date']")
+  // //       .parent()
+  // //       .after("<span class='error_text'>return date should be greater then the duration </span>");
+  // //     $("[name='rides_return_date']").addClass("error_stroke");
+
+  // //     $("[name='rides_return_time']")
+  // //       .parent()
+  // //       .after("<span class='error_text'></span>");
+  // //     $("[name='rides_return_time']").addClass("error_stroke");
+  // //     status = false;
+  // //   }
+  // // }
+
+  //   Calculate distance and Duration
+
+  if (status) {
+    $.ajax({
+      type: "post",
+      url: $(form).find('[name="step_one_url"').val(),
+      dataType: "json",
+      data: {
+        _token: $(form).find('[name="rides_csrf_token"]').val(),
+        source: rides_from,
+        destination: rides_to,
+        adults: adults,
+        children: children,
+        infants: infants,
+        total_passengers: total_passengers,
+        rides_date: rides_date,
+        rides_time: rides_time,
+        rides_return_date: rides_return_date,
+        rides_return_time: rides_return_time,
+        ride_type_id: ride_type_id,
+      },
+      success: function (data) {
+        if (data.success) {
+          window.location.href = next_url;
+        } else if (data.errors) {
+          var message = "";
+          $.each(data.errors, function () {
+            message += this.toLocaleString() + "\n";
+          });
+          alert(message);
+        } else if (data.message) {
+          alert(data.message);
+        }
+
+        $(".btn-check-ride-fare").removeClass("disabled-button");
+      },
+      error: function (xhr, status, error) {
+        if (xhr.status === 419) {
+          location.reload(true);
+        } else {
+          console.log("Error:", xhr.responseText);
+        }
+      },
+    });
+  } else {
+    $(".btn-check-ride-fare").removeClass("disabled-button");
+  }
+});
+
+$("body").on("click", ".p_nextBtn", function (e) {
+  let status = true;
+  let form = $(".p_detail_form"),
+    discountamount = $('[name="discountamount"]').val(),
+    current_btn = this;
+
+  $(".error_text").remove();
+  $(".floating-input").removeClass("error_stroke");
+
+  let full_name = $("[name='full_name']").val();
+  if ($.trim(full_name) === "") {
+    $(form)
+      .find("[name='full_name']")
+      .parent()
+      .after("<span class='error_text'>Full Name is required</span>");
+    $(form).find("[name='full_name']").addClass("error_stroke");
+    if (status === true) {
+      $(form).find("[name='full_name']").focus();
+    }
+    status = false;
+  }
+  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  var email = $("[name='email']").val();
+  if ($.trim(email) == "") {
+    $(form).find("[name='email']").addClass("error_stroke");
+    $(form)
+      .find("[name='email']")
+      .parent()
+      .after('<span class="error_text">Email is required</span>');
+    if (status === true) {
+      $(form).find("[name='email']").focus();
+    }
+    status = false;
+  } else if (!re.test(email)) {
+    $(form).find("[name='email']").addClass("error_stroke");
+    $(form)
+      .find("[name='email']")
+      .parent()
+      .after('<span class="error_text">Invalid email address</span>');
+    if (status == true) {
+      $(form).find("[name='email']").focus();
+    }
+    status = false;
+  }
+  let phone = $("[name='phone']").val();
+  // if ($.trim(phone) === "") {
+  //   $(form)
+  //     .find("[name='phone']")
+  //     .parent()
+  //     .after("<span class='error_text'>Phone Number is required</span>");
+  //   $(form).find("[name='phone']").addClass("error_stroke");
+  //   status = false;
+  // }
+  // else if (!/^\d+$/.test(phone)) {
+  //   $(form)
+  //     .find("[name='phone']")
+  //     .parent()
+  //     .after("<span class='error_text'>Phone Number must be numeric</span>");
+  //   $(form).find("[name='phone']").addClass("error_stroke");
+  //   status = false;
+  // }
+
+  // WhatsApp validation
+  let whatsapp = $("[name='whatsapp']").val();
+  // if ($.trim(whatsapp) === "") {
+  //   $(form)
+  //     .find("[name='whatsapp']")
+  //     .parent()
+  //     .after("<span class='error_text'>WhatsApp Number is required</span>");
+  //   $(form).find("[name='whatsapp']").addClass("error_stroke");
+  //   status = false;
+  // }
+  // else if (!/^\d+$/.test(whatsapp)) {
+  //   $(form)
+  //     .find("[name='whatsapp']")
+  //     .parent()
+  //     .after("<span class='error_text'>WhatsApp Number must be numeric</span>");
+  //   $(form).find("[name='whatsapp']").addClass("error_stroke");
+  //   status = false;
+  // }
+
+  if (iti.isValidNumber() == false) {
+    $(form)
+      .find("[name='phone']")
+      .parent()
+      .after("<span class='error_text'>Phone Number is not valid</span>");
+    $(form).find("[name='phone']").addClass("error_stroke");
+    if (status == true) {
+      $(form).find("[name='phone']").focus();
+    }
+    status = false;
+  } else {
+    formatted_number1 = (
+      "+" +
+      $(".iti__selected-dial-code").text().split(/[+ ]+/).pop() +
+      $("#phone").val().replace(/^0+/, "")
+    )
+      .split(" ")
+      .join("");
+  }
+
+  if (iti1.isValidNumber() == false) {
+    $(form)
+      .find("[name='whatsapp']")
+      .parent()
+      .after("<span class='error_text'>WhatsApp Number is not valid</span>");
+    $(form).find("[name='whatsapp']").addClass("error_stroke");
+    if (status === true) {
+      $(form).find("[name='whatsapp']").focus();
+    }
+    status = false;
+  } else {
+    formatted_number2 = (
+      "+" +
+      $(".iti__selected-dial-code").text().split(/[+ ]+/).pop() +
+      $("#phone1").val().replace(/^0+/, "")
+    )
+      .split(" ")
+      .join("");
+  }
+
+  if (!status) {
+    scrollToErrorTrigger(this);
+    return;
+  }
+
+  var selected_vehicle = $('[name="selected_vehicle"').val(),
+    selected_vehicle_price = $('[name="selected_vehicle_price"]').val();
+
+  var return_discount = $('[name="return_discount"]').val(),
+    return_discount_amount = $('[name="return_discount_amount"]').val(),
+    return_ride_amount = $('[name="return_ride_amount"]').val();
+
+  if (status) {
+    var formData = {
+      _token: $('[name="second_csrf"]').val(),
+      name: full_name,
+      email: email,
+      phone: formatted_number1,
+      watsapp: formatted_number2,
+      flight_detail: $('[name="flight_details"').val(),
+      meet_greet: $('[name="meet_greet"]').val(),
+      extra_notes: $(".floating-textarea").val(),
+      child_seat: $('[name="child_seat"]').val(),
+      photography: $('[name="photography"]').val(),
+      tip: $('select[name="select_tip"]').val(),
+      selected_vehicle: selected_vehicle,
+      selected_vehicle_price: selected_vehicle_price,
+      discountamount: discountamount,
+      note: $(".floating-textarea").val(),
+      return_discount: return_discount,
+      return_discount_amount: return_discount_amount,
+      return_ride_amount: return_ride_amount,
+    };
+
+    $.ajax({
+      type: "post",
+      url: $('[name="second_post_link"]').val(),
+      dataType: "json",
+      data: formData,
+      success: function (data) {
+        if (data.success) {
+          $(".outward").text(
+            "AED " +
+              (
+                parseFloat(data.records.ride_amount) -
+                parseFloat(data.records.return_amount)
+              ).toFixed(2)
+          );
+          if (parseFloat(data.records.return_amount) > 0) {
+            $(".return-li").show();
+            $(".return").text(
+              "(10% Off) AED " +
+                parseFloat(data.records.return_amount).toFixed(2)
+            );
+          } else {
+            $(".return-li").hide();
+          }
+
+          if (parseFloat(data.records.child_seat) > 0) {
+            $(".child-seat-li").show();
+            if (data.records.child_seat) {
+              $(".children_seat").text(
+                "(" +
+                  data.records.child_seat +
+                  ")  AED " +
+                  parseFloat(data.records.children_amount).toFixed(2)
+              );
+            } else {
+              $(".children_seat").text(
+                "  AED " + parseFloat(data.records.children_amount).toFixed(2)
+              );
+            }
+          } else {
+            $(".child-seat-li").hide();
+          }
+
+          if (parseFloat(data.records.photography) > 0) {
+            $(".photography-li").show();
+            if (data.records.photography) {
+              $(".photography").text(
+                "(" +
+                  data.records.photography +
+                  ")AED " +
+                  parseFloat(data.records.photography_amount).toFixed(2)
+              );
+            } else {
+              $(".photography").text(
+                "AED " + parseFloat(data.records.photography_amount).toFixed(2)
+              );
+            }
+          } else {
+            $(".photography-li").hide();
+          }
+
+          if (parseFloat(data.records.tip_amount) > 0) {
+            $(".tip-li").show();
+            $(".tip_amount").text(
+              "AED " + parseFloat(data.records.tip_amount).toFixed(2)
+            );
+          } else {
+            $(".tip-li").hide();
+          }
+          $(".total_amount").text(
+            "AED " + parseFloat(data.records.total_ride_amount).toFixed(2)
+          );
+          disable_personal_detail();
+          $(".v_pDetail_form").hide();
+          $(".editDetailsBtn").show();
+          nextButtonTrigger(current_btn);
+        } else {
+          scrollToErrorTrigger(current_btn);
+        }
+      },
+      error: function (xhr, status, error) {
+        if (xhr.status === 419) {
+          location.reload(true);
+        } else {
+          console.log("Error:", xhr.responseText);
+          alert("Error: " + xhr.responseText);
+        }
+        $(".btn-check-ride-fare").removeClass("disabled-button");
+      },
+    });
+  } else {
+    scrollToErrorTrigger(current_btn);
+  }
+});
+
+function disable_personal_detail() {
+  $('[name="full_name"]').prop("disabled", true);
+  $('[name="email"]').prop("disabled", true);
+  $('[name="phone"]').prop("disabled", true);
+  $('[name="whatsapp"]').prop("disabled", true);
+  $('[name="meet_greet"]').prop("disabled", true);
+  $('[name="child_seat"]').prop("disabled", true);
+  $(".floating-textarea").prop("disabled", true);
+  $(".decrement").addClass("disabled-button");
+  $(".increment").addClass("disabled-button");
+  $('[name="photography"]').prop("disabled", true);
+  $('[name="select_tip"]').prop("disabled", true);
+}
+function enable_personal_detail() {
+  $('[name="full_name"]').prop("disabled", false);
+  $('[name="email"]').prop("disabled", false);
+  $('[name="phone"]').prop("disabled", false);
+  $('[name="whatsapp"]').prop("disabled", false);
+  $('[name="meet_greet"]').prop("disabled", false);
+  $('[name="child_seat"]').prop("disabled", false);
+  $(".floating-textarea").prop("disabled", false);
+  $(".decrement").removeClass("disabled-button");
+  $(".increment").removeClass("disabled-button");
+  $('[name="photography"]').prop("disabled", false);
+  $('[name="select_tip"]').prop("disabled", false);
+}
+
+function nextButtonTrigger(element) {
+  $(element).closest(".p_nextBtnWidth").hide();
+  $(".passenger_payment").show();
+
+  $(".veh_progressLi").removeClass("active").removeClass("done");
+  $(".veh_progress1, .veh_progress2").addClass("done");
+  $(".veh_progress3").addClass("active");
+
+  let headerHeight = $(".header_main").outerHeight();
+  let offset = $(".passengerPayment_offsetter").offset().top + 10;
+  var adjustedPosition = offset - headerHeight;
+
+  if (deviceStatus) {
+    $("html, body").animate({ scrollTop: adjustedPosition }, "slow");
+  } else {
+    smoothScrollInstance.scrollTo(adjustedPosition);
+  }
+}
+
+function scrollToErrorTrigger(element) {
+  let headerHeight = $(".header_main").outerHeight();
+  let offset =
+    $(element).closest(".p_detail_form").find(".error_stroke:first").offset()
+      .top - 30;
+  var adjustedPosition = offset - headerHeight;
+
+  if (deviceStatus) {
+    $("html, body").animate({ scrollTop: adjustedPosition }, "slow");
+  } else {
+    smoothScrollInstance.scrollTo(adjustedPosition);
+  }
+}
+
+//Confirm Button
+$(document).on("click", ".btn-confirm", function (e) {
+  e.preventDefault();
+
+  $(".btn-confirm").addClass("disabled-button");
+
+  var subscribe = $('[name="subscribe"]').is(":checked") ? 1 : 0;
+
+  $(".error_text").remove();
+  $('[name="accept"]').removeClass("error_stroke");
+
+  if (!$('[name="accept"]').is(":checked")) {
+    $('[name="accept"]').parent().parent().addClass("error_stroke");
+    $('[name="accept"]')
+      .parent()
+      .parent()
+      .after('<span class="error_text">Please Choose </span>');
+    // alert("Please Check the Terms and Conditions");
+    $(".btn-confirm").removeClass("disabled-button");
+    return;
+  }
+
+  $.ajax({
+    type: "post",
+    url: $('[name="confirm_url"]').val(),
+    dataType: "json",
+    data: {
+      _token: $('[name="confirm_csrf_token"]').val(),
+      payment_method: $('[name="payment_method"]').val(),
+      coupon_id: $('[name="coupon_id"]').val(),
+      copoun_amount: $('[name="copoun_amount"]').val(),
+      subscribe: subscribe,
+    },
+    success: function (data) {
+      if (data.status == 200 && data.url !== "") {
+        $(".btn-confirm").removeClass("disabled-button");
+        window.location.href = data.url;
+      }
+    },
+    error: function (xhr, status, error) {
+      if (xhr.status === 419) {
+        location.reload(true);
+      } else {
+        console.log("Error:", xhr.responseText);
+        alert("Error: " + xhr.responseText);
+      }
+      $(".btn-confirm").removeClass("disabled-button");
+    },
+  });
+});
+
+//Tracking Form Submission
+
+$(document).on("submit", ".tracking-form", function (e) {
+  var status = true;
+  var trackBooking_ref = $(this).find('[name="trackBooking_ref"]').val();
+
+  if (!trackBooking_ref) {
+    $(this).find('[name="trackBooking_ref"]').addClass("error_stroke");
+    $(this)
+      .find('[name="trackBooking_ref"]')
+      .parent()
+      .after("<span class='error_text'>Tracking Number is required</span>");
+    status = false;
+  }
+
+  if (!status) {
+    e.preventDefault();
+  }
+});
+
+//Hourly Drive
+
+$(document).on("click", ".byHours_search_btn", function (e) {
+  let status = true;
+  let form = $(".tab_byHours");
+  $(".byHours_search_btn").addClass("disabled-button");
+  var next_url = $('input[name="step_two_url"]').val();
+  $(".error_text").remove();
+  $(".floating-input").removeClass("error_stroke");
+
+  //byHours_from validation
+  let byHours_from = $("[name='byHours_from']").val();
+  if ($.trim(byHours_from) === "") {
+    $(form)
+      .find("[name='byHours_from']")
+      .parent()
+      .after("<span class='error_text'>Select From Location</span>");
+    $(form).find("[name='byHours_from']").addClass("error_stroke");
+    status = false;
+  }
+
+  //byHours_date validation
+  let byHours_date = $("[name='byHours_date']").val();
+  if ($.trim(byHours_date) === "") {
+    $(form)
+      .find("[name='byHours_date']")
+      .parent()
+      .after("<span class='error_text'>Select Pickup Date</span>");
+    $(form).find("[name='byHours_date']").addClass("error_stroke");
+    status = false;
+  }
+
+  //byHours_time validation
+  let byHours_time = $("[name='byHours_time']").val();
+  if ($.trim(byHours_time) === "") {
+    $(form)
+      .find("[name='byHours_time']")
+      .parent()
+      .after("<span class='error_text'>Select Pickup Time</span>");
+    $(form).find("[name='byHours_time']").addClass("error_stroke");
+    status = false;
+  }
+
+  if (!timeValidationFunc(byHours_date + " " + byHours_time)) {
+    $(form)
+      .find("[name='byHours_time']")
+      .parent()
+      .after(
+        "<span class='error_text'>The selected time should be ahead of current time.</span>"
+      );
+    $(form).find("[name='byHours_time']").addClass("error_stroke");
+    status = false;
+  }
+
+  //by hours duration validation
+  let byHours_durantion = $("[name='byHours_durantion']").val();
+  if ($.trim(byHours_durantion) === "") {
+    $(form)
+      .find("[name='byHours_durantion']")
+      .parent()
+      .after("<span class='error_text'>Please Select Duration</span>");
+    $(form).find("[name='byHours_durantion']").addClass("error_stroke");
+    status = false;
+  }
+
+  // let airport_ride = $('[name="air_port_ride"').val();
+
+  // if (airport_ride) {
+  //   if (!isAirportRide(byHours_from)) {
+  //     $(form)
+  //       .find("[name='byHours_from']")
+  //       .parent()
+  //       .after(
+  //         "<span class='error_text'>Please Select Airport Location</span>"
+  //       );
+  //     $(form).find("[name='byHours_from']").addClass("error_stroke");
+  //     status = false;
+  //   }
+
+  //   // if (!isAirportRide(rides_to)) {
+  //   //   $(form)
+  //   //     .find("[name='rides_to']")
+  //   //     .parent()
+  //   //     .after(
+  //   //       "<span class='error_text'>Please Select Airport location</span>"
+  //   //     );
+  //   //   $(form).find("[name='rides_to']").addClass("error_stroke");
+  //   //   status = false;
+  //   // }
+  // }
+
+  if (!status) {
+    $(".byHours_search_btn").removeClass("disabled-button");
+    return;
+  }
+
+  var adults = $(form).find('[name="adults"]').val(),
+    children = $(form).find('[name="children"]').val(),
+    infants = $(form).find('[name="infant"]').val(),
+    total_passengers = $(form).find(".total-sum").val(),
+    ride_type_id = $(form).find('[name="ride_type_id"').val();
+
+  if (status) {
+    $.ajax({
+      type: "post",
+      url: $(form).find('[name="step_one_url"').val(),
+      dataType: "json",
+      data: {
+        _token: $(form).find('[name="hourly_token"]').val(),
+        source: byHours_from,
+        destination: null,
+        adults: adults,
+        children: children,
+        infants: infants,
+        total_passengers: total_passengers,
+        rides_date: byHours_date,
+        rides_time: byHours_time,
+        rides_return_date: null,
+        rides_return_time: null,
+        ride_type_id: ride_type_id,
+        duration: byHours_durantion,
+        byHours_durantion: byHours_durantion,
+      },
+      success: function (data) {
+        if (data.success) {
+          window.location.href = next_url;
+        } else if (data.errors) {
+          var message = "";
+          $.each(data.errors, function () {
+            message += this.toLocaleString() + "\n";
+          });
+          $(".byHours_search_btn").removeClass("disabled-button");
+          alert(message);
+        }
+      },
+      error: function (xhr, status, error) {
+        if (xhr.status === 419) {
+          location.reload(true);
+        } else {
+          console.log("Error:", xhr.responseText);
+          alert("Error: " + xhr.responseText);
+        }
+        $(".byHours_search_btn").removeClass("disabled-button");
+      },
+    });
+  } else {
+    $(".byHours_search_btn").removeClass("disabled-button");
+  }
+});
+
+//City Tour Operation
+$(document).on("click", ".cityTour_search_btn", function (e) {
+  let status = true;
+  $(".cityTour_search_btn").addClass("disabled-button");
+  let form = $(".tab_cityTour");
+  var next_url = $('input[name="step_two_url"]').val();
+  $(".error_text").remove();
+  $(".floating-input").removeClass("error_stroke");
+  let cityTour_from = $("[name='cityTour_from']").val();
+  if ($.trim(cityTour_from) === "") {
+    $(form)
+      .find("[name='cityTour_from']")
+      .parent()
+      .after("<span class='error_text'>Select From Location</span>");
+    $(form).find("[name='cityTour_from']").addClass("error_stroke");
+    status = false;
+  }
+  let cityTour_to = $("[name='cityTour_to']").val();
+  if ($.trim(cityTour_to) === "") {
+    $(form)
+      .find("[name='cityTour_to']")
+      .parent()
+      .after("<span class='error_text'>Select To Location</span>");
+    $(form).find("[name='cityTour_to']").addClass("error_stroke");
+    status = false;
+  }
+
+  //cityTour_date validation
+  let cityTour_date = $("[name='cityTour_date']").val();
+  if ($.trim(cityTour_date) === "") {
+    $(form)
+      .find("[name='cityTour_date']")
+      .parent()
+      .after("<span class='error_text'>Select Pickup Date</span>");
+    $(form).find("[name='cityTour_date']").addClass("error_stroke");
+    status = false;
+  }
+
+  //cityTour_time validation
+  let cityTour_time = $("[name='cityTour_time']").val();
+  if ($.trim(cityTour_time) === "") {
+    $(form)
+      .find("[name='cityTour_time']")
+      .parent()
+      .after("<span class='error_text'>Select Pickup Time</span>");
+    $(form).find("[name='cityTour_time']").addClass("error_stroke");
+    status = false;
+  }
+
+  if (!timeValidationFunc(cityTour_date + " " + cityTour_time)) {
+    $(form)
+      .find("[name='cityTour_time']")
+      .parent()
+      .after(
+        "<span class='error_text'>The selected time should be ahead of current time.</span>"
+      );
+    $(form).find("[name='cityTour_time']").addClass("error_stroke");
+    status = false;
+  }
+
+  let SelectFullDayField = $('[name="SelectFullDayField"').val();
+
+  if (!SelectFullDayField) {
+    $(form)
+      .find("[name='SelectFullDayField']")
+      .parent()
+      .after("<span class='error_text'>Please Select Hours</span>");
+    $(form).find("[name='SelectFullDayField']").addClass("error_stroke");
+    status = false;
+  }
+
+  let SelectDesiredCity = $("[name='SelectDesiredCity']").val();
+
+  if (!SelectFullDayField) {
+    $(form)
+      .find("[name='SelectDesiredCity']")
+      .parent()
+      .after("<span class='error_text'>Please Select Desired City</span>");
+    $(form).find("[name='SelectDesiredCity']").addClass("error_stroke");
+    status = false;
+  }
+
+  if (!status) {
+    $(".cityTour_search_btn").removeClass("disabled-button");
+    return;
+  }
+
+  var adults = $(form).find('[name="adults"]').val(),
+    children = $(form).find('[name="children"]').val(),
+    infants = $(form).find('[name="infant"]').val(),
+    total_passengers = $(form).find(".total-sum").val(),
+    ride_type_id = $(form).find('[name="ride_type_id"').val();
+
+  let search_address = cityTour_from;
+  let search_city = SelectDesiredCity;
+  let extra_charges = 0;
+
+  if (search_address.toLowerCase().includes(search_city.toLowerCase())) {
+    extra_charges = 0;
+  } else {
+    extra_charges = 100;
+  }
+
+  if (status) {
+    $.ajax({
+      type: "post",
+      url: $(form).find('[name="step_one_url"').val(),
+      dataType: "json",
+      data: {
+        _token: $(form).find('[name="city_tour_token"]').val(),
+        source: cityTour_from,
+        destination: cityTour_to,
+        adults: adults,
+        children: children,
+        infants: infants,
+        total_passengers: total_passengers,
+        rides_date: cityTour_date,
+        rides_time: cityTour_time,
+        rides_return_date: null,
+        rides_return_time: null,
+        ride_type_id: ride_type_id,
+        hours: SelectFullDayField,
+        tour_city: SelectDesiredCity,
+        extra_charges: extra_charges,
+      },
+      success: function (data) {
+        if (data.success) {
+          window.location.href = next_url;
+        } else if (data.errors) {
+          var message = "";
+          $.each(data.errors, function () {
+            message += this.toLocaleString() + "\n";
+          });
+          alert(message);
+        }
+
+        $(".cityTour_search_btn").removeClass("disabled-button");
+      },
+      error: function (xhr, status, error) {
+        if (xhr.status === 419) {
+          location.reload(true);
+        } else {
+          console.log("Error:", xhr.responseText);
+          alert("Error: " + xhr.responseText);
+        }
+        $(".cityTour_search_btn").removeClass("disabled-button");
+      },
+    });
+  } else {
+    $(".cityTour_search_btn").removeClass("disabled-button");
+  }
+});
+
+//Apply Copoun Code
+
+$(document).on("click", ".apply_copoun", function (e) {
+  e.preventDefault();
+  var url = $('[name="get_copon"]').val(),
+    copoun_code = $('[name="discount_voucher"]').val().trim(),
+    coupon_id = $('[name="coupon_id"]').val(),
+    total_amount = $(".total_amount").text(),
+    copoun_amount = $('[name="copoun_amount"]').val(),
+    total_amount_num = total_amount.split(" ")[1];
+
+  if ($('[name="payment_method"]').val() !== "card") {
+    alert("Discount Voucher Code only apply on Card Payment Mode");
+
+    return;
+  }
+
+  if (copoun_code === "") {
+    $('[name="discount_voucher"]')
+      .parent()
+      .after(
+        '<span class="error_text">Please Enter Discount Voucher to Apply Discount</span>'
+      );
+    $('[name="discount_voucher"]').addClass("error_stroke");
+    return this;
+  }
+
+  if (coupon_id !== "") {
+    $(".total_amount").text(
+      "AED " +
+        (parseFloat(total_amount_num) + parseFloat(copoun_amount)).toFixed(2)
+    );
+    $('[name="coupon_id"]').val("");
+    $('[name="copoun_amount"]').val("0");
+    $(".copoun-applied").remove();
+    $(".apply_copoun").text("Apply");
+    $(".discount-message").remove();
+    $('[name="discount_voucher"]').val(" ");
+    return;
+  }
+
+  $.ajax({
+    type: "get",
+    url: url + "/" + copoun_code,
+    dataType: "json",
+    success: function (data) {
+      if (data.success) {
+        $('[name="coupon_id"]').val(data.copoun.id);
+        var copoun_amt = (
+          (parseFloat(total_amount_num) *
+            parseFloat(data.copoun.discount_percentage)) /
+          100
+        ).toFixed(2);
+        $('[name="copoun_amount"]').val(copoun_amt);
+        $(".total_amount").text(
+          "AED " + (parseFloat(total_amount_num) - copoun_amt).toFixed(2)
+        );
+
+        $(".tip_amount")
+          .parent()
+          .parent()
+          .after(
+            '<li class="copoun-applied"><div class="p_price_breakdown"><span>Discount :</span><strong class="">AED ' +
+              copoun_amt +
+              "</strong></div></li>"
+          );
+
+        $('[name="discount_voucher"]').after(
+          '<br><span class="error_text discount-message">Discount Voucher Applied Successfully</span>'
+        );
+        $(".apply_copoun").text("Remove");
+      } else {
+        $('[name="discount_voucher"]').val(" ");
+        alert("Something went wrong");
+      }
+    },
+    error: function (xhr, status, error) {
+      if (xhr.status === 419) {
+        location.reload(true);
+      } else {
+        console.log("Error:", xhr.responseText);
+        alert("Error: " + xhr.responseText);
+      }
+      $(".btn-check-ride-fare").removeClass("disabled-button");
+    },
+  });
+});

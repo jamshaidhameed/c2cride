@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="25.908" height="22.836" viewBox="0 0 25.908 22.836">
+  <g id="distance-icon" transform="translate(-1404.17 -843.906)">
+    <g id="Group_155" data-name="Group 155">
+      <path id="Path_158" data-name="Path 158" d="M1429.525,849.507c-.466,3.192-3.491,5.45-4.106,5.879a.176.176,0,0,1-.213-.007c-.657-.513-4.17-3.415-4.17-6.7a4.275,4.275,0,0,1,4.652-4.258A4.417,4.417,0,0,1,1429.525,849.507Z" fill="none" stroke="#7c7c7c" stroke-width="1"/>
+      <circle id="Ellipse_19" data-name="Ellipse 19" cx="1.608" cy="1.608" r="1.608" transform="translate(1423.703 847.19)" fill="none" stroke="#7c7c7c" stroke-width="1"/>
+    </g>
+    <g id="Group_156" data-name="Group 156">
+      <path id="Path_159" data-name="Path 159" d="M1413.158,860.29c-.482,3.3-3.708,5.608-4.161,5.917a.081.081,0,0,1-.1,0c-.473-.363-4.225-3.349-4.225-6.74a4.276,4.276,0,0,1,4.651-4.259A4.418,4.418,0,0,1,1413.158,860.29Z" fill="none" stroke="#7c7c7c" stroke-width="1"/>
+      <circle id="Ellipse_20" data-name="Ellipse 20" cx="1.608" cy="1.608" r="1.608" transform="translate(1407.336 857.972)" fill="none" stroke="#7c7c7c" stroke-width="1"/>
+    </g>
+    <path id="Path_160" data-name="Path 160" d="M1425.311,855.46h-7.125a2.618,2.618,0,0,0-2.618,2.618v.308a2.618,2.618,0,0,0,2.618,2.619h4.506a2.619,2.619,0,0,1,2.619,2.619h0a2.619,2.619,0,0,1-2.619,2.618h-13.748" fill="none" stroke="#7c7c7c" stroke-width="1"/>
+  </g>
+</svg>

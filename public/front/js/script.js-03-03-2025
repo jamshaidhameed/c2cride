@@ -1,0 +1,615 @@
+let smoothScrollInstance;
+let deviceStatus = true;
+$(document).ready(function () {
+  $("body").on("click", ".faqs_question", function () {
+    var _this = $(this);
+    if ($(this).parent().hasClass("active")) {
+      $(this).parent().removeClass("active");
+      $(".faqs_answer")
+        .stop()
+        .slideUp(500, function () {
+          $(".faqs_question_icon").html("+");
+        });
+    } else {
+      $(".faqs_content_inner").removeClass("active");
+      $(this).parent().addClass("active");
+      $(".faqs_answer")
+        .stop()
+        .slideUp(500, function () {
+          $(".faqs_question_icon").html("+");
+        });
+      $(this)
+        .parent()
+        .find(".faqs_answer")
+        .stop()
+        .slideDown(500, function () {
+          $(_this).find(".faqs_question_icon").html("-");
+        });
+    }
+  });
+
+  $("body").on("click", ".rideTabBtn", function () {
+    $(".error_text").remove();
+    $(".floating-input").removeClass("error_stroke");
+    let attr = $(this).attr("data-rel");
+    const $target = $(attr);
+
+    if ($target.is(":visible")) {
+      return;
+    }
+    $(this).closest("ul").find(".rideTabBtn").removeClass("active");
+    $(this).addClass("active");
+    $(this).closest(".rides_box").find(".ride_tab_show").hide();
+    $(attr).stop().fadeIn();
+  });
+
+  $("body").on("click", ".carRentals_thumb", function () {
+    let attr = $(this).attr("data-rel");
+    const $target = $(attr);
+
+    if ($target.is(":visible")) {
+      return;
+    }
+    $(this).closest("ul").find(".carRentals_thumb").removeClass("active");
+    $(this).addClass("active");
+    $(this).closest(".carRentals_inner").find(".carRentals_show").hide();
+    $(attr).stop().fadeIn(500);
+
+    $(".carRentals_show").removeClass("active");
+    $(attr).addClass("active");
+  });
+
+  $("body").on("click", ".search_return_plan_btn", function () {
+    $(this).closest(".has_return_btn").hide();
+    $('[name="is_return_ride"]').val("1");
+    $('[name="rides_return_time"]').val(" ");
+    $(".has_return_fields").fadeIn();
+  });
+  $("body").on("click", ".addReturnCloseBtn", function () {
+    $(this).closest(".has_return_fields").hide();
+    $('[name="is_return_ride"]').val("0");
+    $(".has_return_btn").fadeIn();
+    $(this).closest(".has_return_fields").find("input").val("");
+    $(".error_text").remove();
+    $(".floating-input").removeClass("error_stroke");
+  });
+
+  $("body").on("click", ".navDropdown_span", function () {
+    $(".navDropdownBox")
+      .not($(this).closest(".customDropdown").find(".navDropdownBox"))
+      .hide();
+    $(this).closest(".customDropdown").find(".navDropdownBox").toggle();
+  });
+
+  $("body").on("click", ".navDropdownBox li", function () {
+    var selectedOption = $(this).html();
+    $(this).closest("ul").find("li").removeClass("active");
+    $(this).addClass("active");
+    $(this)
+      .closest(".customDropdown")
+      .find(".navDropdown_span")
+      .html(selectedOption);
+    $(".navDropdownBox").hide();
+  });
+
+  $(document).click(function (event) {
+    if (
+      !$(event.target).closest(
+        ".navDropdownBox, .navDropdown_span, .disabledFieldDropdownShow, .customDropdownBox, .customDropdownBtn"
+      ).length
+    ) {
+      $(".navDropdownBox, .customDropdownBox").hide();
+      $(".floating-input").removeClass("focus");
+      $(".customDropdownBtn").removeClass("active");
+    }
+  });
+
+  $("body").on("click", ".disabledFieldDropdownShow", function () {
+    $(".customDropdownBox")
+      .not($(this).closest(".passengers_fieldBox").find(".customDropdownBox"))
+      .hide();
+    $(this).closest(".passengers_fieldBox").find(".customDropdownBox").toggle();
+    $(this).find(".floating-input").toggleClass("focus");
+  });
+
+  $("body").on("click", ".customDropdownBtn", function () {
+    $(".customDropdownBox")
+      .not($(this).closest(".customDropdownParent").find(".customDropdownBox"))
+      .hide();
+    $(this)
+      .closest(".customDropdownParent")
+      .find(".customDropdownBox")
+      .toggle();
+
+    $(".customDropdownBtn")
+      .not($(this).closest(".customDropdownParent").find(".customDropdownBtn"))
+      .removeClass("active");
+    $(this)
+      .closest(".customDropdownParent")
+      .find(".customDropdownBtn")
+      .toggleClass("active");
+    $(".customDropdownBox .error_text").remove();
+    $(".customDropdownBox .floating-input").removeClass("error_stroke");
+  });
+
+  //   increament function
+
+  function updateSectionSum(section) {
+    var total = 0;
+    // Loop through each number input within the specific section and add its value to the total sum
+    section.find(".number-input").each(function () {
+      total += parseInt($(this).val()) || 0;
+    });
+
+    var totalSumInput = section.find(".total-sum"); // Target the specific total-sum input in the section
+    if (total === 0) {
+      totalSumInput.val("");
+    } else {
+      totalSumInput.val(total);
+    }
+  }
+
+  // Increment functionality
+  $(".increment").on("click", function () {
+    var $input = $(this).siblings(".number-input");
+    var currentValue = parseInt($input.val()) || 0;
+    $input.val(currentValue + 1);
+    let inputName = $(this).siblings(".number-input").attr("name");
+
+    if (inputName == "child_seat") {
+      let price = $('[name="child_price"]').val();
+
+      $(".child_amount").text((price * (currentValue + 1)).toFixed(2) + " AED");
+    } else if (inputName === "photography") {
+      let price = $('[name="photography_price"]').val();
+
+      $(".photography_amount").text(
+        (price * (currentValue + 1)).toFixed(2) + " AED"
+      );
+    }
+
+    if ($input.val() == 0) {
+      $input.val("");
+    }
+    var section = $(this).closest(".passengers_fieldBox");
+    updateSectionSum(section);
+  });
+
+  // Decrement functionality
+  $(".decrement").on("click", function () {
+    var $input = $(this).siblings(".number-input");
+    var currentValue = parseInt($input.val()) || 0;
+    if (currentValue > 0) {
+      $input.val(currentValue - 1);
+    }
+
+    if ($input.val() == 0) {
+      $input.val("");
+    }
+
+    let inputName = $(this).siblings(".number-input").attr("name");
+
+    if (inputName == "child_seat") {
+      let price = $('[name="child_price"]').val();
+
+      let amount = price * (currentValue <= 0 ? 0 : currentValue - 1);
+
+      $(".child_amount").text(
+        (amount == 0 ? parseFloat(price) : amount).toFixed(2) + " AED"
+      );
+    } else if (inputName == "photography") {
+      let price = $('[name="photography_price"]').val();
+
+      let amount = price * (currentValue <= 0 ? 0 : currentValue - 1);
+
+      $(".photography_amount").text(
+        (amount == 0 ? parseFloat(price) : amount).toFixed(2) + " AED"
+      );
+    }
+    var section = $(this).closest(".passengers_fieldBox");
+    updateSectionSum(section);
+  });
+
+  // Update sum when manually typing into input
+  $(".number-input").on("input", function () {
+    var $input = $(this);
+    if ($input.val() == 0) {
+      $input.val("");
+    }
+    var section = $(this).closest(".passengers_fieldBox");
+    updateSectionSum(section);
+  });
+
+  // Initialize the total sums for all sections
+  $(".passengers_fieldBox").each(function () {
+    updateSectionSum($(this));
+  });
+
+  $(window).on("scroll", function () {
+    let fixedHeight = $(".header_main").outerHeight();
+    console.log(fixedHeight);
+    let navHeight = $(".topNav").height();
+    if ($(this).scrollTop() > navHeight) {
+      $(".header").addClass("sticky");
+      $(".header").css("padding-bottom", fixedHeight + "px");
+    } else {
+      $(".header").removeClass("sticky");
+      $(".header").css("padding-bottom", "0px");
+    }
+  });
+
+  $(".mob_menuBtn").on("click", function () {
+    $("body, html").toggleClass("openMobileMenu");
+    $(this).toggleClass("active");
+  });
+
+  $(document).click(function (event) {
+    if (!$(event.target).closest(".header_right, .mob_menuBtn").length) {
+      $("body, html").removeClass("openMobileMenu");
+      $(".mob_menuBtn").removeClass("active");
+    }
+  });
+
+  $("body").on("click", ".accordion_header", function () {
+    // const $target = $(this).closest('.accordion_item').find(".accordion_body");
+    // if ($target.is(":visible")) {
+    // 	return;
+    // }
+
+    $(".accordion_item").removeClass("active");
+    $(this).closest(".accordion_item").addClass("active");
+    $(this).closest(".accordion").find(".accordion_body").stop().slideUp(500);
+    $(this)
+      .closest(".accordion_item")
+      .find(".accordion_body")
+      .stop()
+      .slideDown(500);
+  });
+  // popup js
+
+  $("body").on("click", ".reschedule_popup", function () {
+    $(".openReschedule_popup").show();
+    $("body, html").addClass("hidden");
+  });
+  // done_reschedule_popup
+  $("body").on("click", ".done_reschedule_popup", function () {
+    $(".openReschedule_popup").hide();
+    $(".openReschedule_successfully_popup").show();
+    $("body, html").addClass("hidden");
+  });
+
+  $("body").on("click", ".cancel_popup", function () {
+    $(".openCancel_popup").show();
+    $("body, html").addClass("hidden");
+  });
+
+  $("body").on("click", ".doneCancel_ride", function () {
+    $(".openCancel_popup").hide();
+    $(".openCancel_ride_popup").show();
+    $("body, html").addClass("hidden");
+  });
+
+  $("body").on("click", ".all_popup_close, .all_popup_overlay", function () {
+    $(".all_popup").hide();
+    $("body, html").removeClass("hidden");
+  });
+
+  // *********************************************************
+
+  // faqs data relation
+
+  $("body").on("click", ".faqs_link", function () {
+    var rel = $(this).attr("data-rel");
+    $(this).closest("ul").find("a.active").removeClass("active");
+    $(this).addClass("active");
+    var headerHeight = $(".header").outerHeight();
+    var faqsNavBarHeight = $(".faqs_navBar").height();
+
+    var height = headerHeight + faqsNavBarHeight;
+    var offset = $(rel).offset().top;
+    let adjustedPosition = offset - height;
+    if (deviceStatus) {
+      $("html, body").animate({ scrollTop: adjustedPosition }, "slow");
+    } else {
+      smoothScrollInstance.scrollTo(adjustedPosition);
+    }
+  });
+
+  $("body").on("click", ".termsTab_link", function () {
+    var rel = $(this).attr("data-rel");
+    $(this).closest("ul").find("a.active").removeClass("active");
+    $(this).addClass("active");
+    var headerHeight = $(".header_main").outerHeight();
+
+    var height = headerHeight;
+    var offset = $(rel).offset().top;
+    let adjustedPosition = offset - height;
+    if (deviceStatus) {
+      $("html, body").animate({ scrollTop: adjustedPosition }, "slow");
+    } else {
+      smoothScrollInstance.scrollTo(adjustedPosition);
+    }
+  });
+
+  //
+  $("body").on("click", ".bp_getStartedBtn", function () {
+    var headerHeight = $(".header_main").height();
+
+    var offset = $(".bp_registration_form_main").offset().top;
+    let adjustedPosition = offset - headerHeight;
+    if (deviceStatus) {
+      $("html, body").animate({ scrollTop: adjustedPosition }, "slow");
+    } else {
+      smoothScrollInstance.scrollTo(adjustedPosition);
+    }
+  });
+
+  $(window).on("scroll", function () {
+    let scrollTop = $(this).scrollTop();
+    let stickyOffset = 200;
+
+    if (scrollTop > stickyOffset) {
+      $(".faqs_navBar_main").addClass("sticky");
+    } else {
+      $(".faqs_navBar_main").removeClass("sticky");
+    }
+  });
+
+  $("body").on("click", ".vCardSelectBtn", function () {
+    let form = $(".p_detail_form");
+    $('[name="selected_vehicle"]').val($(this).data("vehicle"));
+    $('[name="selected_vehicle_price"]').val($(this).data("price"));
+    $('[name="discountamount"]').val($(this).data("discountamount"));
+
+    $('[name="return_discount"]').val($(this).data("return_discount"));
+    $('[name="return_discount_amount"]').val(
+      $(this).data("return_discount_amount")
+    );
+    $('[name="return_ride_amount"]').val($(this).data("return_ride_amount"));
+
+    var default_passengers = $(this).data("passengers"),
+      selected_passengers = $(this).data("selectedpassengers");
+
+    if (!selected_passengers || selected_passengers == 0) {
+      $(".passengers").empty();
+      $(".passengers").html("" + default_passengers + "<br> Passengers");
+    }
+    $(form).find(".error_text").remove();
+    $(form).find(".floating-input").removeClass("error_stroke");
+
+    $(this).closest(".vc_left").addClass("hasSelectedItem");
+    $(this).closest(".bookingCardUl").find(".bookingCardList").hide();
+    $(this).closest(".bookingCardList").show();
+    $(this).closest(".bookingCardList").addClass("selectedList");
+    $(".passengerDetail_sec").show();
+    $(".p_nextBtnWidth").show();
+    $(".passenger_payment").hide();
+
+    $(".veh_progressLi").removeClass("active").removeClass("done");
+    $(".veh_progress1").addClass("done");
+    $(".veh_progress2").addClass("active");
+
+    let headerHeight = $(".header_main").outerHeight();
+    let offset = $(".passengerDetail_offsetter").offset().top;
+    var adjustedPosition = offset - headerHeight;
+
+    if (deviceStatus) {
+      $("html, body").animate({ scrollTop: adjustedPosition }, "slow");
+    } else {
+      smoothScrollInstance.scrollTo(adjustedPosition);
+    }
+
+    //
+    setTimeout(function () {
+      $(".SelectTipDropdown").select2({
+        placeholder: "Select Tip",
+        allowClear: true,
+      });
+
+      $(".SelectTipDropdown").on("change", function () {
+        var $parent = $(this).closest(".form-floating");
+        if ($(this).val()) {
+          $parent.addClass("has-value");
+        } else {
+          $parent.removeClass("has-value");
+        }
+      });
+    });
+  });
+
+  $("body").on("click", ".editDetailsBtn", function () {
+    $(".passengerDetail_sec").show();
+    $(".p_nextBtnWidth").show();
+    $(".passenger_payment").hide();
+    $(".v_pDetail_form").show();
+
+    enable_personal_detail();
+
+    $(".veh_progressLi").removeClass("active").removeClass("done");
+    $(".veh_progress1").addClass("done");
+    $(".veh_progress2").addClass("active");
+
+    let headerHeight = $(".header_main").outerHeight();
+    let offset = $(".passengerDetail_offsetter").offset().top;
+    var adjustedPosition = offset - headerHeight;
+
+    if (deviceStatus) {
+      $("html, body").animate({ scrollTop: adjustedPosition }, "slow");
+    } else {
+      smoothScrollInstance.scrollTo(adjustedPosition);
+    }
+  });
+
+  // $("body").on("click", ".p_nextBtn", function () {
+  // 	$(this).closest('.p_nextBtnWidth').hide();
+  // 	$('.passenger_payment').show();
+
+  // 	$('.veh_progressLi').removeClass("active").removeClass("done");
+  // 	$('.veh_progress1, .veh_progress2').addClass("done");
+  // 	$('.veh_progress3').addClass("active");
+
+  // 	let headerHeight = $('.header_main').outerHeight();
+  // 	let offset = $('.passengerPayment_offsetter').offset().top + 10;
+  // 	var adjustedPosition = offset - headerHeight;
+  // 	console.log("headerHeight", headerHeight)
+  // 	console.log("offset", offset)
+  // 	console.log("adjustedPosition", adjustedPosition);
+  // 	if (deviceStatus) {
+  // 		$('html, body').animate({ scrollTop: adjustedPosition }, 'slow');
+  // 	} else {
+  // 		smoothScrollInstance.scrollTo(adjustedPosition);
+  // 	}
+
+  // });
+
+  // change vehicle function
+
+  $("body").on("click", ".vCardChangeVehicleBtn", function () {
+    $(this).closest(".vc_left").removeClass("hasSelectedItem");
+    $(this).closest(".bookingCardUl").find(".bookingCardList").show();
+    $(this).closest(".bookingCardList").hide();
+    $(this).closest(".bookingCardList").removeClass("selectedList");
+    $(".passengerDetail_sec").hide();
+
+    $(".veh_progressLi").removeClass("active").removeClass("done");
+    $(".veh_progress1").addClass("active");
+
+    $(".v_card_sliderBox, .mobile_freeCancel_slider").slick("refresh");
+    let headerHeight = $(".header_main").outerHeight();
+    let offset = $(".bookingDetailsMain").offset().top;
+    var adjustedPosition = offset - headerHeight;
+
+    if (deviceStatus) {
+      $("html, body").animate({ scrollTop: adjustedPosition }, "slow");
+    } else {
+      smoothScrollInstance.scrollTo(adjustedPosition);
+    }
+  });
+
+  $("body").on("click", ".selectPaymentBtn", function () {
+    $(".selectPaymentBtn").removeClass("active");
+    $(this).addClass("active");
+    $('[name="payment_method"]').val($(this).data("type"));
+
+    if ($(this).data("type") != "card") {
+      var total_amount = $(".total_amount").text(),
+        copoun_amount = $('[name="copoun_amount"]').val(),
+        total_amount_num = total_amount.split(" ")[1];
+
+      if (parseFloat(copoun_amount) > 0) {
+        $(".total_amount").text(
+          "AED " +
+            (parseFloat(total_amount_num) + parseFloat(copoun_amount)).toFixed(
+              2
+            )
+        );
+      }
+
+      $('[name="coupon_id"]').val("");
+      $('[name="copoun_amount"]').val("0");
+      $(".copoun-applied").remove();
+      $(".apply_copoun").text("Apply");
+      $(".discount-message").remove();
+      $('[name="discount_voucher"]').val(" ");
+
+      $('[name="discount_voucher"]').addClass("disabled-button");
+      $(".apply_copoun").addClass("disabled-button");
+    } else {
+      $('[name="discount_voucher"]').removeClass("disabled-button");
+      $(".apply_copoun").removeClass("disabled-button");
+    }
+  });
+
+  $("body").on("click", ".topPromoClose", function () {
+    $(this).closest(".topPromo").hide();
+  });
+  // ****************************************
+
+  $("body").on("click", ".outJourney_header", function () {
+    $(this).closest(".outwordJoourney_mobile").toggleClass("active");
+    $(this)
+      .closest(".outwordJoourney_mobile")
+      .find(".outJourney_content")
+      .slideToggle();
+  });
+  $(document).click(function (event) {
+    if (!$(event.target).closest(".outwordJoourney_mobile").length) {
+      $(".outJourney_content").slideUp();
+      $(".outwordJoourney_mobile").removeClass("active");
+    }
+  });
+
+  // track booking popup validation
+  // rides form validation
+  $("body").on("click", ".trackBooking_srch_btn", function (e) {
+    let status = true;
+    let form = $(this).closest(".trackBooking_dropdownBox");
+    $(".error_text").remove();
+    $(".floating-input").removeClass("error_stroke");
+
+    //rides_from validation
+    let trackBooking_ref = $("[name='trackBooking_ref']").val();
+    if ($.trim(trackBooking_ref) === "") {
+      $(form)
+        .find("[name='trackBooking_ref']")
+        .parent()
+        .after(
+          "<span class='error_text'>Enter booking reference number</span>"
+        );
+      $(form).find("[name='trackBooking_ref']").addClass("error_stroke");
+      status = false;
+    }
+
+    // //email validation
+    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    var trackBooking_email = $("[name='trackBooking_email']").val();
+    if ($.trim(trackBooking_email) == "") {
+      $(form).find("[name='trackBooking_email']").addClass("error_stroke");
+      $(form)
+        .find("[name='trackBooking_email']")
+        .parent()
+        .after('<span class="error_text">Emial is required</span>');
+      status = false;
+    } else if (!re.test(trackBooking_email)) {
+      $(form).find("[name='trackBooking_email']").addClass("error_stroke");
+      $(form)
+        .find("[name='trackBooking_email']")
+        .parent()
+        .after('<span class="error_text">Invalid email addresss</span>');
+      status = false;
+    }
+
+    if (status) {
+      // $('.demo_form_btn').addClass('disabled');
+      var formData = {
+        RefNumber: trackBooking_ref,
+        Email: trackBooking_email,
+      };
+      console.log(formData);
+      window.location.href = "booking_tracking.html";
+    }
+  });
+
+  // end ready
+});
+
+$(window).on("load", function () {
+  var isTouchDevice =
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.msMaxTouchPoints > 0;
+  var isSmallScreen =
+    window.innerWidth < 767 || document.documentElement.clientWidth < 767;
+  if (!isTouchDevice && !isSmallScreen) {
+    smoothScrollInstance = new SmoothScroll(document, 100, 10);
+    deviceStatus = false;
+  }
+
+  let mobFooterHeight = $(".mobileFooter").height();
+  if ($(".mobileFooter").is(":visible")) {
+    $(".footer").css("padding-bottom", mobFooterHeight + "px");
+  } else {
+    $(".footer").css("padding-bottom", "0px");
+  }
+});

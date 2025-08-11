@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="18.787" height="18.64" viewBox="0 0 18.787 18.64">
+  <g id="city-tour-icon" transform="translate(-488.251 -353.2)">
+    <path id="Path_21" data-name="Path 21" d="M499.378,353.575a4.373,4.373,0,0,0-4.373,4.373c0,3.422,3.339,7.54,4.213,8.552a.269.269,0,0,0,.38.026l.027-.026c.863-1.016,4.126-5.13,4.126-8.552A4.373,4.373,0,0,0,499.378,353.575Zm0,6.223a2.151,2.151,0,0,1-2.073-2.718,2.125,2.125,0,0,1,1.5-1.5,2.152,2.152,0,0,1,2.719,2.073v.006a2.147,2.147,0,0,1-2.147,2.141Z" fill="none" stroke="#000" stroke-width="0.75"/>
+    <path id="Path_22" data-name="Path 22" d="M503.667,358.94l.569-.039,2.358,11.623-4.9.87-7.7-.814-5.306.814,1.432-11.932,4.352-.562.624.031" fill="none" stroke="#000" stroke-width="0.75"/>
+    <line id="Line_19" data-name="Line 19" x1="0.311" y2="11.697" transform="translate(494.155 358.902)" fill="none" stroke="#000" stroke-width="0.75"/>
+    <line id="Line_20" data-name="Line 20" x1="0.828" y1="6.498" transform="translate(500.865 364.897)" fill="none" stroke="#000" stroke-width="0.75"/>
+  </g>
+</svg>

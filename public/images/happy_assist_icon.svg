@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="87.115" height="97.41" viewBox="0 0 87.115 97.41">
+  <g id="customer-care-icon" transform="translate(-264.965 -343.896)">
+    <g id="Group_35" data-name="Group 35">
+      <path id="Path_35" data-name="Path 35" d="M341.669,389.109a1.749,1.749,0,0,1-1.75-1.75v-8.566a31.4,31.4,0,1,0-62.794,0v8.566a1.749,1.749,0,1,1-3.5,0v-8.566a34.9,34.9,0,1,1,69.792,0v8.566A1.749,1.749,0,0,1,341.669,389.109Z" fill="#8af4b5"/>
+    </g>
+    <g id="Group_36" data-name="Group 36">
+      <path id="Path_36" data-name="Path 36" d="M326.158,433.361h-5.385a1.749,1.749,0,1,1,0-3.5h5.385A14.289,14.289,0,0,0,340.182,418.3a1.751,1.751,0,0,1,3.438.663A17.8,17.8,0,0,1,326.158,433.361Z" fill="#8af4b5"/>
+    </g>
+    <g id="Group_37" data-name="Group 37">
+      <circle id="Ellipse_5" data-name="Ellipse 5" cx="9.86" cy="9.86" r="9.86" transform="translate(301.059 421.587)" fill="#62d38f"/>
+    </g>
+    <g id="Group_40" data-name="Group 40">
+      <g id="Group_38" data-name="Group 38">
+        <path id="Rectangle_16" data-name="Rectangle 16" d="M3.258,0H15.773a0,0,0,0,1,0,0V31.267a0,0,0,0,1,0,0H3.258A3.258,3.258,0,0,1,0,28.008V3.258A3.258,3.258,0,0,1,3.258,0Z" transform="translate(264.965 387.358)" fill="#62d38f"/>
+      </g>
+      <g id="Group_39" data-name="Group 39">
+        <path id="Rectangle_17" data-name="Rectangle 17" d="M3.258,0H15.773a0,0,0,0,1,0,0V31.267a0,0,0,0,1,0,0H3.258A3.258,3.258,0,0,1,0,28.008V3.258A3.258,3.258,0,0,1,3.258,0Z" transform="translate(352.079 418.624) rotate(-180)" fill="#62d38f"/>
+      </g>
+    </g>
+  </g>
+</svg>

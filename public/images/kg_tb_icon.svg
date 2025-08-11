@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20.527" height="18.285" viewBox="0 0 20.527 18.285">
+  <g id="atob-icon" transform="translate(-79.664 -465.953)">
+    <text id="A" transform="translate(80.165 474.17)" font-size="10.65" font-family="WorkSans-Regular, Work Sans"><tspan x="0" y="0">A</tspan></text>
+    <text id="B" transform="translate(93.135 481.238)" font-size="10.65" font-family="WorkSans-Regular, Work Sans"><tspan x="0" y="0">B</tspan></text>
+    <path id="Path_38" data-name="Path 38" d="M84.74,479.866h.146a5.56,5.56,0,0,0,5.56-5.56,5.564,5.564,0,0,1,4.664-5.489" fill="none" stroke="#000" stroke-width="1"/>
+    <line id="Line_11" data-name="Line 11" x1="0.006" transform="translate(80.164 475.959)" fill="none" stroke="#000" stroke-width="1"/>
+    <circle id="Ellipse_9" data-name="Ellipse 9" cx="2.293" cy="2.293" r="2.293" transform="translate(95.106 466.453)" fill="none" stroke="#000" stroke-width="1"/>
+    <circle id="Ellipse_10" data-name="Ellipse 10" cx="2.293" cy="2.293" r="2.293" transform="translate(80.164 477.409)" fill="none" stroke="#000" stroke-width="1"/>
+  </g>
+</svg>

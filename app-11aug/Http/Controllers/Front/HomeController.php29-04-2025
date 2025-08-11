@@ -1,0 +1,1319 @@
+<?php
+
+namespace App\Http\Controllers\Front;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+// use Spatie\Share\Share; 
+use App\Models\Vehicle;
+use App\Models\CarType;
+use App\Models\FeatureRates;
+use App\Models\User;
+use App\Models\Ride;
+use App\Models\Coupons;
+use App\Models\Subsrip;
+use App\Models\BecomePartner;
+use App\Models\SafariPackages;
+use App\Models\SafariAddon;
+use App\Models\RideAddon;
+use App\Mail\BookingRequest;
+use App\Mail\BookingConfirm;
+use App\Mail\AdminRequest;
+use App\Mail\ContactUsMail;
+use App\Mail\RideCancel;
+use App\Mail\AdminCancel;
+use App\Mail\RideReschedule;
+use Carbon\Carbon;
+use Stripe\Stripe;
+use DateTime;
+use NoCaptcha;
+
+class HomeController extends Controller
+{
+    public function index(){
+        return view('front.index');
+    }
+    public function rides_step_one(Request $request){
+        // return $request->all();
+
+        try {
+            $validatedData = $request->validate([
+            'source' => 'required|string',
+            'destination' => 'nullable|string',
+            'adults' => 'nullable',
+            'children' => 'nullable',
+            'infants' => 'nullable',
+            'total_passengers' => 'nullable',
+            'rides_date' => 'required',
+            'rides_time' => 'required',
+        ]);
+
+        $distance_duration = $request->ride_type_id == 1 ? calculate_distance($request->source,$request->destination) : null;
+
+        if (empty($distance_duration) && $request->ride_type_id == 1) {
+            
+            return response()->json(['success' => false,'message' => 'No Distance Calculated Please Check your Internet Connection']);
+        }elseif (gettype($distance_duration) ==  "string" && $request->ride_type_id == 1) {
+
+           return response()->json(['success' => false,'message' => 'No Distance Calculated Please Check your Internet Connection']);
+        }
+
+        // Validate the Selected Date time and Return Date time 
+
+            $time = (string)date('H:i:s',strtotime($request->rides_time));
+            $date = (string)date('Y-m-d',strtotime($request->rides_date));
+
+            $date_time = $date." ".$time;
+
+            $ride_posted_date = Carbon::parse($date); // Example selected date
+            $currentDate = Carbon::today();
+            if ($ride_posted_date->lessThan($currentDate)) {
+
+                
+                return response()->json(['success' =>false,'message' => 'Old Date not allowed']);
+            }
+
+            if (!empty($request->rides_return_date)){
+
+                $dateString = $request->rides_date." ".$request->rides_time;
+                $date = Carbon::createFromFormat('D, d M, Y h:i A', $dateString);
+                $ride_date_time = $date->format('Y-m-d H:i:s');
+
+                $dateString = $request->rides_return_date." ".$request->rides_return_time;
+
+                $date = Carbon::createFromFormat('D, d M, Y h:i A', $dateString);
+                $return_date_time = $date->format('Y-m-d H:i:s');
+
+                if (Carbon::parse($ride_date_time)->greaterThan(Carbon::parse($return_date_time))) {
+                   
+                    
+                    return response()->json(['success' =>false,'message' => 'Return Date should be greater then ride date ']);
+                }
+
+            }
+        // 
+
+
+        $distance = !empty($distance_duration) && count($distance_duration) > 0 ? $distance_duration["distance"] : 0;
+        $duration = !empty($distance_duration) && count($distance_duration) > 0 ? $distance_duration["duration"] : '';
+        $is_Airport_ride = $request->ride_type_id == 1 ?isThisAirportRide($request->source,$request->destination) : false;
+        $is_pickup_airport = isAirportRide($request->source);
+
+        if (!empty($request->rides_return_date) && !empty($request->rides_return_time)) {
+            
+            $time = (string)date('H:i:s',strtotime($request->rides_time));
+            $date = (string)date('Y-m-d',strtotime($request->rides_date));
+
+            $return_time = (string)date('H:i:s',strtotime($request->rides_return_time));
+            $return_date = (string)date('Y-m-d',strtotime($request->rides_return_date));
+
+            $date_time = $date." ".$time;
+
+            $return_date_time =  $return_date." ".$return_time;
+ 
+            $from_date = Carbon::parse($date);
+            $return_date = Carbon::parse($return_date);
+
+            if ($from_date->equalTo($return_date)){
+
+                $duration_minutes = convertToMinutes($duration);
+
+                $time1 =  strtotime($time);
+                $time2 = strtotime($return_time);
+
+                $minutesDifference = abs(($time2 - $time1) / 60);
+
+                if ($minutesDifference <= $duration_minutes) {
+                    
+                    return response()->json(['success' =>false,'message' => 'Please Choose time greater than the Duration '.$duration]);
+                }
+            }
+        }
+
+        $extra_charges = 0;
+
+        $session_data = [
+            'source' => $request->source, 
+            'destination' => $request->destination,
+            'rides_date' => $request->rides_date,
+            'rides_time' => $request->rides_time,
+            'rides_return_date' => $request->rides_return_date,
+            'rides_return_time' => $request->rides_return_time,
+            'way' => !empty($request->rides_return_date) ? 'two-way' : 'one-way',
+            'distance' => $distance,
+            'duration' => $duration,
+            'is_Airport_ride' => $is_Airport_ride,
+            'adults' => $request->adults,
+            'children' => $request->children,
+            'infants' => $request->infants,
+            'total_passengers' => $request->total_passengers,
+            'ride_type_id' => $request->ride_type_id,
+            'byHours_durantion' => $request->byHours_durantion,
+            'hours' => $request->hours,
+            'tour_city' => $request->tour_city,
+            'extra_charges' => $request->extra_charges,
+            'is_pickup_airport' => $is_pickup_airport
+        ];
+
+        Session::put('step_one_data', $session_data);
+
+        return response()->json(['success' => true, 'data' => $session_data]);
+
+        } catch (ValidationException $e) {
+           
+            return response()->json([
+            'success' => false,
+            'errors' => $e->errors()
+        ]);
+        }
+        
+    }
+
+    public function step_no_two(){
+
+        if (empty(session("step_one_data"))) {
+            
+            return redirect()->route('front.index');
+        }
+
+        $vehicles = Vehicle::all();
+        $data = session("step_one_data");
+        $feature_rates = FeatureRates::first();
+
+        return view('front.ride.booking',compact('vehicles','data','feature_rates'));
+    }
+    public function post_step_two(Request $request){
+
+        $feature_rates = FeatureRates::first();
+        $total_ride_amount = 0;
+        $ride_amount = $request->selected_vehicle_price;
+        $children_amount = $request->child_seat * (!empty($feature_rates) ? $feature_rates->children_seat_charges : 0);
+        $photography_amount = $request->photography * (!empty($feature_rates) ? $feature_rates->photography_charges : 0);
+        $tip_amount = !empty($request->tip) && count(explode(" ",$request->tip)) > 0 ? explode(" ",$request->tip)[1] : 0;
+        $total_ride_amount = (float) $ride_amount  + (float) $children_amount + (float) $photography_amount + (float) $tip_amount;
+
+        $return_ride_total = 0;
+
+        if (session("step_one_data")["way"] == "two-way") {
+            
+            $return_ride_total = $request->return_ride_amount  ;
+        }
+
+        // if (!empty(session("step_one_data")) && session("step_one_data")["way"] == "two-way") {
+            
+        //     $total_ride_amount *= 2;
+        // }
+
+        $data = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'watsapp' => $request->watsapp,
+            'flight_detail' => $request->flight_detail,
+            'meet_greet' => $request->meet_greet,
+            'child_seat' => $request->child_seat,
+            'photography' => $request->photography,
+            'selected_vehicle' => $request->selected_vehicle,
+            'tip' => $request->tip,
+            'children_amount' => $children_amount,
+            'photography_amount' => $photography_amount,
+            'tip_amount' => $tip_amount,
+            'ride_amount' => $ride_amount,
+            'total_ride_amount' => $total_ride_amount,
+            'return_amount' => $return_ride_total,
+            'discount_amount' => $request->discountamount,
+            'note' => $request->note,
+            'return_discount' => $request->return_discount,
+            'return_discount_amount' => $request->return_discount_amount,
+        ];
+
+        Session::put('step_two_data', $data);
+
+        return response()->json(['success' => true,'records' => $data]);
+    }
+
+    public function confirm_ride_post(Request $request){
+
+        
+
+        $user = '';
+        if (Auth::check() && Auth::user()->role_id != 1) {
+            $user = Auth::user();
+        }else{
+
+            $if_exist = User::where('email',session("step_two_data")["email"])->first();
+            if (!empty($if_exist)) {
+                
+                $user = $if_exist;
+            }elseif(empty(session("guest-booking"))){
+
+                $user_id = User::create([
+                        'name'=> session("step_two_data")["name"] ,
+                        'email'=> session("step_two_data")["email"],
+                        'mobile_number' => session("step_two_data")["phone"],
+                        'whatsapp' => session("step_two_data")["watsapp"],
+                        'password'=>encrypt('123455'),
+                        'role_id'=> 2
+                    ]);
+                $user =  $user_id;
+                
+            }elseif (!empty(session("guest-booking"))) {
+                $user = User::create(
+                    [
+                        'name'=> session("step_two_data")["name"] ,
+                        'email'=> session("step_two_data")["email"],
+                        'mobile_number' => session("step_two_data")["phone"],
+                        'whatsapp' => session("step_two_data")["watsapp"],
+                        'password'=>encrypt('123455'),
+                        'role_id'=> 4
+                    ]
+                    );
+            }
+        }
+
+        // Subscribers 
+
+        if ($request->subscribe == 1) {
+            
+            $if_exist = Subsrip::where('email' ,session("step_two_data")["email"])->get();
+
+            if (count($if_exist) == 0) {
+                
+                Subsrip::create([
+                    'email' => session("step_two_data")["email"]
+                ]);
+            }
+        }
+
+        // 
+
+        $copoun_id = $request->coupon_id;
+        $copoun_amount = $request->copoun_amount;
+
+        if (!empty($copoun_id) && !empty($copoun_amount)) {
+            
+            Session::put("copoun_applied",["id" => $copoun_id,'amount' => $copoun_amount]);
+        }
+
+        
+
+        $admins = User::where('role_id', 1)->get();
+
+        session("payment_method",$request->payment_method);
+
+        if ($request->payment_method == "card") {
+
+            $total_amount = (float) session("step_two_data")["total_ride_amount"];
+
+            if (session("step_one_data")["way"] == "two-way" && (float) session("step_two_data")["children_amount"] > 0) {
+                $total_amount += (float) session("step_two_data")["children_amount"];
+            }
+             if (session("step_one_data")["way"] == "two-way" && (float) session("step_two_data")["tip_amount"] > 0) {
+                $total_amount += (float) session("step_two_data")["tip_amount"];
+            }
+            
+            // $ride = (object)$ride_data;
+
+            // $encrypted_ride = Crypt::encrypt($ride);
+
+            // Cookie::queue('ride', $encrypted_ride, 60);
+
+            \Stripe\Stripe::setApiKey(env("STRIPE_SECRET"));
+            $session = \Stripe\Checkout\Session::create([
+                'line_items' => [
+                    [
+                        'price_data' => [
+                            'currency' => 'AED',
+                            'product_data' => [
+                                "name" => 'C2C'
+                            ],
+                            'unit_amount' => round($total_amount - (float)$copoun_amount,2) * 100
+                        ],
+                        'quantity' => 1,
+                    ]
+                ],
+                'mode' => 'payment',
+                'success_url' => url('stripe/success?payment_method=card'),
+                'cancel_url' => url('/'),
+            ]);
+
+            return response()->json(['status' => 200, 'message' => 'success', 'url' => $session->url]);
+        }
+
+        $new_ride = self::create_ride($user,$admins,"cash");
+        
+        session()->forget(['step_two_data', 'step_two_data','guest-booking']);
+        // Cookie::queue(Cookie::forget('ride'));
+
+        return response()->json(['status' => 200,'url' => route('thankyou.success',$new_ride)]);
+
+    }
+    public function stripe_success(Request $request){
+
+        $peyment_method = $request["payment_method"];
+        
+        $user = null;
+        $parent = null;
+        if (!empty(auth()->id())) {
+            
+            $user = User::where('id', auth()->id())->first();
+        }else{
+            $user = User::where('email', session("step_two_data")["email"])->first();
+        }
+        $admins = User::where('role_id', 1)->get();
+
+
+        $parent = self::create_ride($user,$admins, $peyment_method);
+
+        if (empty($parent)) {
+           
+            $parent = Ride::where('user_id',$user->id)->orderBy('id','DESC')->first();
+        }
+
+         Ride::where('id', $parent->id)->update([
+            'status' => 4,
+        ]);
+
+        Ride::where('parent_id', $parent->id)->update([
+            'status' => 4,
+        ]);
+
+        
+        session()->forget(['step_two_data', 'step_two_data']);
+
+        return redirect()->route('thankyou.success',$parent);
+
+    }
+
+    public function create_ride($user,$admins,$peyment_method){
+
+        // session()->forget(['step_one_data', 'step_two_data','payment_method',"copoun_applied"]);
+
+        if (empty(session("step_one_data")) || empty(session("step_two_data"))) {
+            
+            return redirect()->route('front.index');
+        }
+
+        $time = (string)date('H:i:s',strtotime(session('step_one_data')['rides_time']));
+        $date = (string)date('Y-m-d',strtotime(session('step_one_data')['rides_date']));
+
+        $date_time = $date." ".$time;
+        $car_info = Vehicle::find(session("step_two_data")["selected_vehicle"]);
+
+        $booking_code = generateBookingNumber(session("step_one_data")["source"], session("step_one_data")["destination"], !empty( $car_info) ?  $car_info->title : '', session("step_one_data")["ride_type_id"], session("step_one_data")["way"]);
+        $way = session("step_one_data")["way"];
+
+        $ride_duration = '';
+        //
+
+        if (session("step_one_data")["ride_type_id"] == 1) {
+            $ride_duration = session("step_one_data")["duration"];
+        }elseif(session("step_one_data")["ride_type_id"] == 2) {
+            $ride_duration = session("step_one_data")["byHours_durantion"];
+        }elseif (session("step_one_data")["ride_type_id"] == 3) {
+            $ride_duration = session("step_one_data")["hours"];
+        }
+
+        $total_amount = (float)session("step_two_data")["total_ride_amount"];
+
+        if (!empty(session("copoun_applied"))) {
+            
+            $copoun_amount = session("copoun_applied")["amount"];
+
+            $total_amount -= (float) $copoun_amount;
+        }
+        
+        $total_amount -= (float) session("step_two_data")["return_amount"];
+
+        $dateString = session("step_one_data")["rides_date"]." ".session("step_one_data")["rides_time"];
+        $date = Carbon::createFromFormat('D, d M, Y h:i A', $dateString);
+
+
+        $ride_data = [
+            'user_id' => $user->id,
+            'parent_id' => null,
+            'source' => session("step_one_data")["source"],
+            'destination' => session("step_one_data")["destination"],
+            'ride_type_id' => session("step_one_data")["ride_type_id"],
+            'way' =>  $way === 'one-way' ? 1 : 2,
+            'adults' => session("step_one_data")["adults"],
+            'children' => session("step_one_data")["children"],
+            'luggage' => session("step_one_data")["infants"],
+            'child_seats' => session("step_two_data")["child_seat"],
+            'date_time' =>  $date->format('Y-m-d H:i:s'),
+            'ride_date' => date('Y-m-d', strtotime(session("step_one_data")["rides_date"])),
+            'ride_time' => date('H:i:s', strtotime(session("step_one_data")["rides_time"])),
+            'car' => !empty($car_info) ? $car_info->title : '',
+            'car_id' => !empty($car_info) ? $car_info->id : null,
+            'payment_method' => $peyment_method,
+            'price' => round($total_amount,2),
+            'flight_number' => session("step_two_data")["flight_detail"],
+            'duration' => $ride_duration,
+            'meet_greet' => session("step_two_data")["meet_greet"],
+            'whatsapp_number' => session("step_two_data")["watsapp"],
+            'mobile_number' => session("step_two_data")["phone"],
+            'display_name' => session("step_two_data")["name"],
+            'email' => session("step_two_data")["email"],
+            'distance' => session("step_one_data")["distance"],
+            'status' => 2,
+            'currency_id' => 1,
+            'booking_code' => $booking_code,
+            'return_date' => $way != "one-way" && !empty(session("step_one_data")["rides_return_date"]) ? date('Y-m-d', strtotime(session("step_one_data")["rides_return_date"])) : null,
+            'return_time' => $way != "one-way" && !empty(session("step_one_data")["rides_return_time"]) ? date('H:i:s', strtotime(session("step_one_data")["rides_return_time"])) : null,
+            'tip_amount' => session("step_two_data")["tip_amount"],
+            'discount_amount' => session("step_two_data")["discount_amount"],
+            'photography_amount' => session("step_two_data")["photography_amount"],
+            'photograph' => session("step_two_data")["photography"],
+            'children_seat_amount' => session("step_two_data")["children_amount"],
+            'note' => session("step_two_data")["note"],
+            'extra_charges' => session("step_one_data")["extra_charges"],
+            'tour_city' => session("step_one_data")["tour_city"],
+            'return_discount' => session("step_two_data")["return_discount"],
+            'return_discount_amount' => session("step_two_data")["return_discount_amount"],
+            'return_ride_amount' => session("step_two_data")["return_amount"]
+
+        ];
+        $ride = Ride::create($ride_data);
+
+        if ($way != 'one-way') {
+
+            $total_amount = round((float) session("step_two_data")["return_amount"] + (float)session("step_two_data")["children_amount"] + (float)session("step_two_data")["tip_amount"],2);
+
+            $return_date_time = '';
+
+            $date = date('Y-m-d', strtotime(session("step_one_data")["rides_return_date"]));
+            $time = date('H:i:s', strtotime(session("step_one_data")["rides_return_time"]));
+
+            $dateString =session("step_one_data")["rides_return_date"]." ".session("step_one_data")["rides_return_time"];
+            $date = Carbon::createFromFormat('D, d M, Y h:i A', $dateString);
+
+
+            $booking_code = generateBookingNumber(session("step_one_data")["destination"], session("step_one_data")["source"], !empty( $car_info) ?  $car_info->title : '', session("step_one_data")["ride_type_id"], session("step_one_data")["way"]);
+            
+            $return_ride = Ride::create([
+            'user_id' => $user->id,
+            'parent_id' => $ride->id,
+            'source' => session("step_one_data")["destination"],
+            'destination' => session("step_one_data")["source"],
+            'ride_type_id' => session("step_one_data")["ride_type_id"],
+            'way' =>  $way === 'one-way' ? 1 : 2,
+            'adults' => session("step_one_data")["adults"],
+            'children' => session("step_one_data")["children"],
+            'luggage' => session("step_one_data")["infants"],
+            'child_seats' => session("step_two_data")["child_seat"],
+            'date_time' => $date->format('Y-m-d H:i:s'),
+            'ride_date' => date('Y-m-d', strtotime(session("step_one_data")["rides_return_date"])),
+            'ride_time' => date('H:i:s', strtotime(session("step_one_data")["rides_return_time"])),
+            'car' => !empty($car_info) ? $car_info->title : '',
+            'car_id' => !empty($car_info) ? $car_info->id : null,
+            'payment_method' => $peyment_method,
+            'price' => $total_amount,
+            'flight_number' => session("step_two_data")["flight_detail"],
+            'duration' => $ride_duration,
+            'meet_greet' => session("step_two_data")["meet_greet"],
+            'whatsapp_number' => session("step_two_data")["watsapp"],
+            'mobile_number' => session("step_two_data")["phone"],
+            'display_name' => session("step_two_data")["name"],
+            'email' => session("step_two_data")["email"],
+            'distance' => session("step_one_data")["distance"],
+            'status' => 2,
+            'currency_id' => 1,
+            'booking_code' => $booking_code,
+            'return_date' => !empty(session("step_one_data")["rides_return_date"]) ? date('Y-m-d', strtotime(session("step_one_data")["rides_return_date"])) : null,
+            'return_time' => !empty(session("step_one_data")["rides_return_time"]) ? date('H:i:s', strtotime(session("step_one_data")["rides_return_time"])) : null,
+            'return_discount_amount' => 0,
+            'return_discount' => 0,
+            'children_seat_amount' => session("step_two_data")["children_amount"],
+            'return_ride_amount' => session("step_two_data")["return_amount"],
+            'tip_amount' => session("step_two_data")["tip_amount"],
+            ]);
+
+            $ride->return_time = $return_ride->date_time;
+            $ride->return_booking_code = $return_ride->booking_code;
+        }
+        // session("copoun_applied",["id" => $copoun_id,'amount' => $copoun_amount]);
+        if (!empty(session("copoun_applied"))) {
+            
+            DB::table('coupon_users')->insert([
+                'user_id' => $user->id,
+                'coupons_id' => session("copoun_applied")["id"],
+                'ride_id' => $ride->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        
+        session()->forget(['step_one_data', 'step_two_data','payment_method',"copoun_applied"]);
+
+        if($ride->payment_method =='card'){
+
+            $email = new BookingConfirm($user, $ride);
+            Mail::to($ride->email)->send($email);
+
+        }else{
+            $email = new BookingRequest($user, $ride);
+            Mail::to($ride->email)->send($email);
+          
+        }
+
+        foreach ($admins as $admin) {
+            $email = new AdminRequest($admin, $ride);
+            Mail::to($admin['email'])->send($email);
+        }
+
+        session()->forget(['step_one_data', 'step_two_data','payment_method',"copoun_applied"]);
+
+        return $ride;
+    }
+
+    public function thankyou_success($ride){
+
+      $ride = Ride::find($ride);
+
+      $child_ride = Ride::where('parent_id',$ride)->first();
+
+    //   dd($child_ride);
+
+
+      return view('front.ride.success',compact('ride','child_ride'));
+
+    }
+
+    public function tracking_post(Request $request){
+        
+        $request->validate(
+            [
+                'trackBooking_ref' => 'required|string|max:255',
+                'trackBooking_email' => 'nullable'
+            ]
+            );
+        
+        $ride = Ride::where('booking_code',$request->trackBooking_ref)->first();
+
+        if (empty($ride)) {
+            
+            return back()->withErrors(['trackBooking_ref' => 'No Record Found']);
+        }
+
+        return redirect()->route('tracking.show',$request->trackBooking_ref);
+       
+    }
+    public function tracking_show($booking_no){
+
+         $ride = Ride::where('booking_code',$booking_no)->first();
+
+         if (empty($ride)) {
+            
+            return back()->withErrors(['trackBooking_ref' => 'No Record Found']);
+        }
+
+         $user = User::where('email',$ride->email)->first();
+
+         $tracking_no = $booking_no;
+
+         $track_url = route('tracking.show', $tracking_no); // Replace with your actual route
+
+        // $shareLinks = Share::page($url, 'Check out this post!')
+        //     ->facebook()
+        //     ->twitter()
+        //     ->linkedin()
+        //     ->whatsapp()
+        //     ->telegram()
+        //     ->getRawLinks();
+
+
+        return view('front.ride.tracking',compact('ride','tracking_no','track_url'));
+    }
+
+    public function get_ride($id){
+
+        return response()->json(Ride::find($id));
+    }
+
+    public function print_invoice($id){
+
+
+        $ride = Ride::where('id',$id)->first();
+
+         if (empty($ride)) {
+            
+            return back()->withErrors(['trackBooking_ref' => 'No Record Found']);
+        }
+
+         $user = User::where('email',$ride->email)->first();
+
+         $data = [
+            'image_path' => asset('front/images/logo.svg'),
+            'ride' => $ride,
+            'user' => $user
+        ];
+
+        $pdf = Pdf::loadView('front.invoice.invoice', $data);
+
+        $newFileName = 'invoice_' . $ride->booking_code . '.pdf';
+        // return $pdf->download( $newFileName);
+
+        //  return response()->streamDownload(function() use ($pdf) {
+        //     echo $pdf->output();
+        // }, $newFileName);
+
+         return response()->stream(function () use ($pdf) {
+                echo $pdf->output();
+                }, 200, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'attachment; filename="invoice_'.$ride->booking_code.'.pdf"',
+                ]);
+
+        // return view('front.invoice.invoice',compact('ride','user'));
+    }
+
+    //Get Copoun Code 
+
+    public function get_copon_code(Request $request){
+
+        $code = $request->code;
+        $ride_type_id = $request->ride_type_id;
+        if (empty($code)) {
+            
+            return response()->json(['sucess' => false,'message' => 'Please Provide a Discount Voucher Code']);
+        }
+        $coupon = Coupons::where('code', $code)->where(['active' =>  true])->where('valid_until', '>=', Carbon::today())->with('ride_type')->first();
+        $response = null;
+        if (empty($coupon)) {
+            $response = ['success' => false,'message' => 'This Copoun Code is not Valid!'];
+        }elseif ($coupon->ride_type_id != $ride_type_id) {
+            $ride_type = !empty($coupon->ride_type->type) ? $coupon->ride_type->type : '';
+            $response = ['success' => false,'message' => 'Invalid Copoun Code!, This Copoun Code is valid for only for '.$ride_type.""];
+        }
+        else{
+            
+            $response = ['success' => true,'copoun' =>$coupon];
+        }
+        return response()->json($response);
+    }
+
+
+    //store become partner form
+    public function store_become_partner(Request $request){
+
+        $request->validate(
+            [
+                'first_name' => 'required',
+                'last_name' => 'required',
+                'email' => 'required',
+                'phone' => 'required',
+                'address' => 'nullable',
+                'emirates' => 'required',
+                'are_you' => 'required',
+                'register_with' => 'required',
+                'message' => 'nullable',
+            ]
+            );
+
+            BecomePartner::create(
+                [
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'emirates' => $request->emirates,
+                'are_you' => $request->are_you,
+                'are_you_register' => $request->register_with,
+                'message' => $request->message,
+                ]
+                );
+
+           $admins = User::where('role_id',1)->get();
+
+           foreach ($admins as $admin) {
+            
+              $admin_message = '<p> Dear '.$admin->name."</p><p>Become a Partner form has been submitted with the following informations</p><p><strong>Name: ".$request->first_name." ".$request->last_name." <br> Email: ".$request->email."<br> Phone: ".$request->phone."<br>Address: ".$request->address."<br> Emirates: ".$request->emirates."<br> Are you ?: ".$request->are_you."<br>Register: ".$request->register_with."<br> Message: ".$request->message."<br>";
+
+              Mail::to($admin->email)->send(new ContactUsMail('Become a Partner',$admin_message));
+           }
+
+        //  return redirect()->back();
+
+        return response()->json(['success' =>true,'message' =>"Your Message has been sent successfully"]);
+    }
+
+    public function sent_contact_us(Request $request){
+        $request->validate(
+            [
+                'full_name' => 'required',
+                'email' => 'required',
+                'phone' => 'required',
+                'message' => 'required',
+            ]
+            );
+
+            $admins = User::where('role_id',1)->get();
+
+           foreach ($admins as $admin) {
+            
+              $admin_message = '<p> Dear '.$admin->name."</p><p>New Contact Us Enquiry has been Received with the Following Details</p><p><strong>Name: ".$request->full_name." <br> Email: ".$request->email."<br> Phone: ".$request->phone."<br> Message: ".$request->message."<br>";
+
+              Mail::to($admin->email)->send(new ContactUsMail('Contact Us Mail',$admin_message));
+           }
+
+           $user_message = "<p>Dear ".$request->full_name."</p><p> your enquiry has been received we will get back to you soon . Thank you for contacting us </p>";
+
+           Mail::to($request->email)->send(new ContactUsMail('Contact Us Mail',$user_message));
+
+           return response()->json(['success' => true,'message' =>'Email has been sent Successfully' ]);
+
+         
+    }
+
+    public function reschedule_ride(Request $request,string $id){
+
+       $request->validate(
+        [
+            'ride_date' => 'required',
+            'rides_time' => 'required',
+        ]
+        );
+       
+        $time = (string)date('H:i:s',strtotime($request->rides_time));
+        $date = (string)date('Y-m-d',strtotime($request->ride_date));
+
+        $date_time = $date." ".$time;
+
+        Ride::where('id',$id)->update(['ride_date' => $date,'return_time' => $time,'date_time' => $date_time]);
+
+        $ride = Ride::find($id);
+
+
+
+        $admins = User::where('role_id',1)->get();
+
+
+
+        foreach ($admins as $admin) {
+
+            // $admin_message = '<p> Dear '.$admin->name."</p><p>Ride with the booking # <strong>".$ride->booking_code." </strong>has been rescheduled to ".$request->ride_date."  ".$request->rides_time."</p><p>";
+
+              Mail::to($admin->email)->send(new RideReschedule($admin,$ride));
+
+        }
+
+        return response()->json(['success' => true,'message' => 'Successfully Rescheduled the Ride']);
+
+    }
+
+    public function cancel_ride(Request $request,string $id){
+
+
+
+        $remarks = $request->remarks;
+
+        $ride_remarks = '';
+
+        if (!empty($remarks) && count($remarks) > 0) {
+            
+            $ride_remarks = implode(', ',$remarks);
+        }
+
+
+        Ride::where('id',$id)->update(['status' => 3,'cancel_remarks' =>  $ride_remarks]);
+
+        $admins = User::where('role_id',1)->get();
+
+        $ride = Ride::find($id);
+
+        $customer = User::where('id',$ride->user_id)->first();
+
+        $email = new AdminCancel($customer, $ride);
+        Mail::to($ride->email)->send($email);
+
+        foreach ($admins as $admin) {
+
+            // $admin_message = '<p> Dear '.$admin->name."</p><p>Ride with the booking # <strong>".$ride->booking_code."</strong> has been Canceled</p><p>";
+
+              Mail::to($admin->email)->send(new RideCancel($admin,$ride));
+
+        }
+
+        return response()->json(['success' => true,'message' => 'Successfully Canceled the Ride']);
+    }
+
+    //Safari Booking
+
+    public function post_safari_step_one(Request $request){
+
+        try {
+            $validatedData = $request->validate([
+            'source' => 'required|string',
+            'adults' => 'nullable',
+            'children' => 'nullable',
+            'infants' => 'nullable',
+            'total_passengers' => 'nullable',
+            'ride_date' => 'required',
+            'ride_time' => 'required',
+            'SelectDesiredCity' => 'required'
+        ]);
+
+        $time = (string)date('H:i:s',strtotime($request->ride_time));
+        $date = (string)date('Y-m-d',strtotime($request->ride_date));
+
+        $date_time = $date." ".$time;
+
+        $ride_posted_date = Carbon::parse($date); // Example selected date
+        $currentDate = Carbon::today();
+        if ($ride_posted_date->lessThan($currentDate)) {
+
+            return response()->json(['success' => false,'message' => 'Old Date not allowed']);
+        }
+
+        $session_data = [
+            'source' => $request->source,
+            'ride_date' => $request->ride_date,
+            'ride_time' => $request->ride_time,
+            'adults' => empty($request->adults) ? 0 : $request->adults,
+            'children' => empty($request->children) ? 0 : $request->children,
+            'infants' => empty($request->infants) ? 0 : $request->infants,
+            'total_passengers' => empty($request->total_passengers) ? 0 : $request->total_passengers,
+            'SelectDesiredCity' => $request->SelectDesiredCity,
+            'ride_type_id' => $request->ride_type_id
+        ];
+
+        Session::put('safari_step_one_data', $session_data);
+
+        return response()->json(['success' => true, 'data' => $session_data]);
+
+        } catch (ValidationException $e) {
+           
+            return response()->json([
+            'success' => false,
+            'errors' => $e->errors()
+        ]);
+        }
+        
+    }
+    public function show_safari_step_two(){
+        
+        if (empty(session("safari_step_one_data"))) {
+            
+            return redirect()->route('front.index');
+        }
+
+        $data = session("safari_step_one_data");
+        $packages = SafariPackages::where('status',1)->get();
+        $addons = SafariAddon::all();
+        
+        $feature_rates = FeatureRates::first();
+
+        return view('front.safari.booking',compact('data','packages','addons','feature_rates'));
+    }
+
+    public function safari_step_two_post(Request $request){
+
+        $feature_rates = FeatureRates::first();
+        $selected_package = SafariPackages::find($request->selected_package);
+        $selected_quantity = $request->selected_quantity;
+        $total_ride_amount = 0;
+        $ride_amount = 0;
+        $discount = 0;
+
+        if (!empty($selected_package)) {
+            
+            $ride_price = (float) $selected_package->price * (float) $selected_quantity;
+
+            if ($selected_package->discount > 0 && $selected_package->apply_discount == 1) {
+                
+                $discount = $ride_price * $selected_package->discount / 100;
+
+                $ride_amount = round($ride_price - $discount,2);
+            }else{
+                $ride_amount = $ride_price;
+            }
+        }
+        $children_amount = $request->child_seat * (!empty($feature_rates) ? $feature_rates->children_seat_charges : 0);
+        $photography_amount = $request->photography * (!empty($feature_rates) ? $feature_rates->photography_charges : 0);
+        $tip_amount = !empty($request->tip) && count(explode(" ",$request->tip)) > 0 ? explode(" ",$request->tip)[1] : 0;
+
+
+        // Selected AddOn Amount 
+
+        $selected_add_on = $request->selected_add_on;
+        $add_on_quantity = $request->add_on_quantity;
+        $net_add_on_amount = 0;
+        $add_on_amount = 0;
+        $add_amount = 0;
+        $selected_add_on_arr = [];
+
+        if (!empty($selected_add_on)) {
+              $selected_ad_arr = explode(",",$selected_add_on);
+              $selected_quantity_arr = explode(",",$add_on_quantity);
+
+              foreach ($selected_ad_arr as $key => $id) {
+                
+                $add_on = SafariAddon::where('id',$id)->first();
+
+                if (!empty($add_on)) {
+                    
+                    $add_on_price = $add_on->price * (float) $selected_quantity_arr[$key];
+
+                    if ($add_on->discount > 0 && $add_on->apply_discount == 1) {
+                        
+                        $add_discount = $add_on_price * $add_on->discount / 100;
+
+                        $add_on_amount = round($add_on_price - $add_discount,2);
+                    }else{
+                        $add_on_amount = $add_on_price;
+                    }
+
+                    $add_amount = $add_on_amount;
+
+                    $net_add_on_amount += $add_amount;
+
+                    $selected_add_on_arr [] = [
+                        'id' => $id,
+                        'title' => $add_on->title,
+                        'quantity' => $selected_quantity_arr[$key],
+                        'amount' => $add_on_amount
+                    ];
+                }
+              }
+            
+        }
+
+        $total_ride_amount = (float) $net_add_on_amount + (float) $ride_amount + (float) $children_amount + (float) $photography_amount + (float) $tip_amount;
+
+        $session_data = [
+            'name' => $request->f_name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'whatsapp' => $request->whatsapp,
+            'flight_details' => $request->flight_details,
+            'meet_greet' => $request->meet_greet,
+            'notes' => $request->notes,
+            'child_seat' => $request->child_seat,
+            'photography' => $request->photography,
+            'package_name' => !empty($selected_package) ? $selected_package->name : "",
+            'quantity' => $selected_quantity,
+            'ride_amount' => $ride_amount,
+            'total_ride_amount' => $total_ride_amount,
+            'discount' => $discount,
+            'children_amount' => $children_amount,
+            'photography_amount' => $photography_amount,
+            'tip_amount' => $tip_amount,
+            'selected_package' => $request->selected_package,
+            'selected_add_on' => $selected_add_on,
+            'add_on_quantity' => $add_on_quantity,
+            'add_on_amount' =>  $add_on_amount
+
+        ];
+
+        session::put("safari_step_two_data",$session_data);
+        if (count($selected_add_on_arr) > 0) {
+            
+            session::put("safari_add_on_arr",$selected_add_on_arr);
+        }
+
+        return response()->json(['success' => true,'records' => $session_data,'selected_add_on_arr' => $selected_add_on_arr]);
+    }
+
+    public function safari_booking_post(Request $request){
+        $user = '';
+        if (Auth::check() && Auth::user()->role_id != 1) {
+            $user = Auth::user();
+        }else{
+
+            $if_exist = User::where('email',session("safari_step_two_data")["email"])->first();
+            if (!empty($if_exist)) {
+                
+                $user = $if_exist;
+            }elseif(empty(session("guest-booking"))){
+
+                $user_id = User::create([
+                        'name'=> session("safari_step_two_data")["name"] ,
+                        'email'=> session("safari_step_two_data")["email"],
+                        'mobile_number' => session("safari_step_two_data")["phone"],
+                        'whatsapp' => session("safari_step_two_data")["whatsapp"],
+                        'password'=>encrypt('123455'),
+                        'role_id'=> 2
+                    ]);
+                $user =  $user_id;
+                
+            }elseif (!empty(session("guest-booking"))) {
+                $user = User::create(
+                    [
+                        'name'=> session("safari_step_two_data")["name"] ,
+                        'email'=> session("safari_step_two_data")["email"],
+                        'mobile_number' => session("safari_step_two_data")["phone"],
+                        'whatsapp' => session("safari_step_two_data")["whatsapp"],
+                        'password'=>encrypt('123455'),
+                        'role_id'=> 4
+                    ]
+                    );
+            }
+        }
+
+        // Subscribers 
+
+        if ($request->subscribe == 1) {
+            
+            $if_exist = Subsrip::where('email' ,session("safari_step_two_data")["email"])->get();
+
+            if (count($if_exist) == 0) {
+                
+                Subsrip::create([
+                    'email' => session("safari_step_two_data")["email"]
+                ]);
+            }
+        }
+		
+		
+		
+		 $admins = User::where('role_id', 1)->get();
+
+        session("safari_payment_method",$request->payment_method);
+
+        $copoun_id = $request->coupon_id;
+        $copoun_amount = $request->copoun_amount;
+
+        if (!empty($copoun_id) && !empty($copoun_amount)) {
+            
+            Session::put("copoun_applied",["id" => $copoun_id,'amount' => $copoun_amount]);
+        }
+		
+		if ($request->payment_method == "card") {
+            
+            // $ride = (object)$ride_data;
+
+            // $encrypted_ride = Crypt::encrypt($ride);
+
+            // Cookie::queue('ride', $encrypted_ride, 60);
+
+            $total_amount  = (float)session("safari_step_two_data")["total_ride_amount"] - (float)$copoun_amount;
+
+            \Stripe\Stripe::setApiKey(env("STRIPE_SECRET"));
+            $session = \Stripe\Checkout\Session::create([
+                'line_items' => [
+                    [
+                        'price_data' => [
+                            'currency' => 'AED',
+                            'product_data' => [
+                                "name" => 'C2C'
+                            ],
+                            'unit_amount' => round($total_amount,2) * 100
+                        ],
+                        'quantity' => 1,
+                    ]
+                ],
+                'mode' => 'payment',
+                'success_url' => url('safari/stripe/success?payment_method=card'),
+                'cancel_url' => url('/'),
+            ]);
+
+            return response()->json(['status' => 200, 'message' => 'success', 'url' => $session->url]);
+        }
+
+        $new_ride = self::safari_create_ride($user,$admins,"cash");
+        
+        session()->forget(['safari_step_one_data', 'safari_step_two_data','guest-booking']);
+        // Cookie::queue(Cookie::forget('ride'));
+
+        return response()->json(['status' => 200,'url' => route('thankyou.success',$new_ride)]);
+
+    }
+    public function safari_stripe_success(Request $request){
+
+        $peyment_method = $request["payment_method"];
+        
+        $user = null;
+        $parent = null;
+        if (!empty(auth()->id())) {
+            
+            $user = User::where('id', auth()->id())->first();
+        }else{
+            $user = User::where('email', session("safari_step_two_data")["email"])->first();
+        }
+        $admins = User::where('role_id', 1)->get();
+
+
+        $parent = self::safari_create_ride($user,$admins, $peyment_method);
+
+        if (empty($parent)) {
+           
+            $parent = Ride::where('user_id',$user->id)->orderBy('id','DESC')->first();
+        }
+
+         Ride::where('id', $parent->id)->update([
+            'status' => 4,
+        ]);
+
+        
+        session()->forget(['safari_step_one_data', 'safari_step_two_data']);
+
+        return redirect()->route('thankyou.success',$parent);
+
+    }
+
+    public function safari_create_ride($user,$admins,$peyment_method){
+
+         if (empty(session("safari_step_one_data")) || empty(session("safari_step_two_data"))) {
+            
+            return redirect()->route('front.index');
+        }
+
+        $time = (string)date('H:i:s',strtotime(session('safari_step_one_data')['ride_time']));
+        $date = (string)date('Y-m-d',strtotime(session('safari_step_one_data')['ride_date']));
+
+        $date_time = $date." ".$time;
+
+        $booking_code = generateBookingNumber(session("safari_step_one_data")["source"], "", !empty( $car_info) ?  $car_info->title : '', session("safari_step_one_data")["ride_type_id"], 1);
+        $way = 1;
+
+        $ride_duration = '';
+        //
+
+        
+        $ride_duration = "";
+
+        $total_amount = (float)session("safari_step_two_data")["total_ride_amount"];
+
+        if (!empty(session("copoun_applied"))) {
+            
+            $copoun_amount = session("copoun_applied")["amount"];
+
+            $total_amount -= (float) $copoun_amount;
+        }
+        $ride_data = [
+            'user_id' => $user->id,
+            'parent_id' => null,
+            'source' => session("safari_step_one_data")["source"],
+            'destination' => "",
+            'ride_type_id' => session("safari_step_one_data")["ride_type_id"],
+            'way' =>   1,
+            'adults' => session("safari_step_one_data")["adults"],
+            'children' => session("safari_step_one_data")["children"],
+            'luggage' => session("safari_step_one_data")["infants"],
+            'child_seats' => session("safari_step_two_data")["child_seat"],
+            'date_time' => Carbon::parse($date_time)->format('Y-m-d H:i:s'),
+            'ride_date' => date('Y-m-d', strtotime(session("safari_step_one_data")["ride_date"])),
+            'ride_time' => date('H:i:s', strtotime(session("safari_step_one_data")["ride_time"])),
+            'car' => session("safari_step_two_data")["package_name"],
+            'car_id' => session("safari_step_two_data")["selected_package"],
+            'payment_method' => $peyment_method,
+            'price' => round($total_amount,2),
+            'flight_number' => !empty(session("safari_step_two_data")["flight_details"]) ? session("safari_step_two_data")["flight_details"] : "", //
+            'duration' => $ride_duration,
+            'meet_greet' => session("safari_step_two_data")["meet_greet"],
+            'whatsapp_number' => session("safari_step_two_data")["whatsapp"],
+            'mobile_number' => session("safari_step_two_data")["phone"],
+            'display_name' => session("safari_step_two_data")["name"],
+            'email' => session("safari_step_two_data")["email"],
+            'distance' => "",
+            'status' => 2,
+            'currency_id' => 1,
+            'booking_code' => $booking_code,
+            'return_date' => null,
+            'return_time' => null,
+            'tip_amount' => session("safari_step_two_data")["tip_amount"],
+            'discount_amount' => empty(session("safari_step_two_data")["discount"]) ? 0 : session("safari_step_two_data")["discount"],
+            'photography_amount' => session("safari_step_two_data")["photography_amount"],
+            'photograph' => session("safari_step_two_data")["photography"],
+            'children_seat_amount' => session("safari_step_two_data")["children_amount"],
+            'note' => session("safari_step_two_data")["notes"],
+            'extra_charges' => 0,
+            'tour_city' => "",
+            'return_discount' => 0,
+            'return_discount_amount' => 0,
+            'return_ride_amount' => 0
+
+        ];
+        $ride = Ride::create($ride_data);
+        // session("copoun_applied",["id" => $copoun_id,'amount' => $copoun_amount]);
+        if (!empty(session("copoun_applied"))) {
+            
+            DB::table('coupon_users')->insert([
+                'user_id' => $user->id,
+                'coupons_id' => session("copoun_applied")["id"],
+                'ride_id' => $ride->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        if (!empty(session("safari_add_on_arr"))) {
+           
+            $safari_add_on_arr = session("safari_add_on_arr");
+
+            foreach ($safari_add_on_arr as $key => $add) {
+                
+                RideAddon::create(
+                [
+                    'ride_id' => $ride->id,
+                    'add_on_id' => $add["id"],
+                    'quantity' => $add["quantity"],
+                    'amount' => $add["amount"]
+                ]
+                );
+            }
+
+            
+        }
+
+         if (!empty(session("copoun_applied"))) {
+            
+            DB::table('coupon_users')->insert([
+                'user_id' => $user->id,
+                'coupons_id' => session("copoun_applied")["id"],
+                'ride_id' => $ride->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        
+        session()->forget(['safari_step_two_data', 'safari_step_one_data','safari_payment_method',"copoun_applied","safari_add_on_arr"]);
+        if($ride->payment_method =='card'){
+
+            $email = new BookingConfirm($user, $ride);
+            Mail::to($ride->email)->send($email);
+
+        }else{
+            $email = new BookingRequest($user, $ride);
+            Mail::to($ride->email)->send($email);
+          
+        }
+
+        foreach ($admins as $admin) {
+            $email = new AdminRequest($admin, $ride);
+            Mail::to($admin['email'])->send($email);
+        }
+ 
+        
+
+        return $ride; 
+    }
+// public function update_user_data(){
+
+//     $rides = Ride::all();
+
+//     foreach ($rides as $ride) {   
+           
+//         User::where('id',$ride->user_id)->update([
+//             'mobile_number' => $ride->mobile_number 
+//         ]);
+//     }
+// }
+
+public function ride_tracking(){
+
+    return view('front.track');
+}
+    
+} 

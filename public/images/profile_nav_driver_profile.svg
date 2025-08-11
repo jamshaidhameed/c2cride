@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="31.125" height="22.001" viewBox="0 0 31.125 22.001">
+  <g id="driver-profile" transform="translate(-1623.276 -202.665)">
+    <g id="Group_24" data-name="Group 24">
+      <circle id="Ellipse_2" data-name="Ellipse 2" cx="3.656" cy="3.656" r="3.656" transform="translate(1639.13 210.159)" fill="none" stroke="#000" stroke-linecap="round" stroke-width="1"/>
+      <path id="Path_28" data-name="Path 28" d="M1648.353,219.178a6.239,6.239,0,0,1,.9,3.2,6.333,6.333,0,0,1-.257,1.79h-12.42a6.333,6.333,0,0,1-.257-1.79,6.47,6.47,0,0,1,2.829-5.354" fill="none" stroke="#000" stroke-linecap="round" stroke-width="1"/>
+      <path id="Path_29" data-name="Path 29" d="M1646.424,217.021a6.5,6.5,0,0,1,1.068.913" fill="none" stroke="#000" stroke-linecap="round" stroke-width="1"/>
+    </g>
+    <rect id="Rectangle_5" data-name="Rectangle 5" width="30.125" height="21.001" rx="2.417" transform="translate(1623.776 203.165)" fill="none" stroke="#000" stroke-linecap="round" stroke-width="1"/>
+    <line id="Line_2" data-name="Line 2" x2="6.749" transform="translate(1626.659 206.938)" fill="none" stroke="#000" stroke-linecap="round" stroke-width="1"/>
+    <line id="Line_3" data-name="Line 3" x2="6.749" transform="translate(1626.659 213.503)" fill="none" stroke="#000" stroke-linecap="round" stroke-width="1"/>
+    <line id="Line_4" data-name="Line 4" x2="9.51" transform="translate(1626.659 210.159)" fill="none" stroke="#000" stroke-linecap="round" stroke-width="1"/>
+  </g>
+</svg>
