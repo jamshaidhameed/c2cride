@@ -200,7 +200,7 @@ function currency_format($amount){
 
     if (count($currencies) > 0) {
           
-        $code = !empty(\Illuminate\Support\Facades\Session::get("currency")) ? strtolower(\Illuminate\Support\Facades\Session::get("currency")) : 'gbp';
+        $code = !empty(\Illuminate\Support\Facades\Session::get("currency")) ? strtolower(\Illuminate\Support\Facades\Session::get("currency")) : 'aed';
 
         $change_rate = $currencies[$code] ?? 0;
         $changed_rate = number_format($change_rate * (float) $amount,2);
