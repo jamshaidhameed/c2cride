@@ -57,6 +57,8 @@
 
         <li><a @if(Route::currentRouteName() == 'admin.holiday-homes') class="active_link text-center" @endif href="{{ route('admin.holiday-homes') }}">Holiday Homes</a></li>
 
+        <li><a @if(Route::currentRouteName() == 'admin.daily.rides.report') class="active_link text-center" @endif href="{{ route('admin.daily.rides.report') }}">Daily Rides Report</a></li>
+
         <li><a href="{{ route('logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();"><img src="{{asset('images/link_icon6.svg')}}" alt="">
                 <img src="{{asset('images/link_icon6_hover.svg')}}" alt=""> Logout</a>
 

@@ -90,4 +90,11 @@ Route::middleware(['auth', 'redirect_if_not_authenticated'])
 
          Route::get('/export-vendors', [App\Http\Controllers\Admin\HomeController::class, 'export_vendors'])->name('export.vendors');
 
+         Route::get('daily-rides-report',[App\Http\Controllers\Admin\RideController::class,'daily_ride_report'])->name('daily.rides.report');
+
+         Route::post('rides-apply-filter',[App\Http\Controllers\Admin\RideController::class,'rides_apply_filters'])->name('rides.apply.filters');
+
+         Route::post('update-ride-informaitons',[App\Http\Controllers\Admin\RideController::class,'update_ride_informations'])->name('update.ride.informaitons');
+         Route::get('/export-rides',[App\Http\Controllers\Admin\RideController::class,'ride_exports'])->name('export.rides');
+
     });

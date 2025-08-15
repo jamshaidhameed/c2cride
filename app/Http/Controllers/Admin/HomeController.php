@@ -833,5 +833,5 @@ class HomeController extends Controller
 
             return $e->getMessage();
           }
-     }   
+     }  
 }

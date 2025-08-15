@@ -59,7 +59,13 @@ class Ride extends Model
         'updated_by',
         'is_past',
         'currency',
-        'cancel_by'
+        'cancel_by',
+        'tve_booking_number',
+        'serial_number',
+        'payment_link_confirmation',
+        'source_report',
+        'remarks_by_c2c_team',
+        'ride_extra_details'
     ];
 
     protected $with = 'ridetype';

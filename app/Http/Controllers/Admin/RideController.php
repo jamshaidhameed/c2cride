@@ -27,6 +27,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\RidesExport;
 
 
 class RideController extends Controller
@@ -1254,4 +1256,104 @@ class RideController extends Controller
         $total = $price + $chlid_seat;
         return response()->json(['status' => 200, 'distance' => $return_distance_duration, 'price' => $total, 'ride' => $ride]);
     }
+
+    public function daily_ride_report(Request $request){
+
+        $fields = $request->all();
+
+        
+        $rides = Ride::with('user');
+
+        if ($request->filled('from_date') && $request->filled("to_date")) {
+            
+            $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
+            $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
+
+            $rides = $rides->whereBetween('ride_date',[$from_date,$to_date]);
+        }else{
+            $rides = $rides->where('ride_date',Carbon::now()->toDateString());
+        }
+
+        $rides = $rides->get();
+
+
+        return view('admin.rides.daily',compact('rides'));
+    }
+
+    public function rides_apply_filters(Request $request){
+
+        $request->validate(
+            [
+                'from_date' => 'required',
+                'to_date' => 'required'
+            ]
+            );
+        
+        $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
+        $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
+
+        $rides = Ride::with('user');
+
+        $rides = $rides->whereBetween('ride_date',[$from_date,$to_date]);
+
+        $rides = $rides->get();
+
+        $response = view('admin.rides.table', compact('rides'))->render();
+
+        return response()->json(['status' => 200, 'response' => $response]);
+        
+    }
+    
+     public function ride_exports(Request $request){
+
+
+           $fields = $request->all();
+            
+            $rides = Ride::with('user');
+
+        if ($request->filled('from_date') && $request->filled("to_date")) {
+            
+            $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
+            $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
+
+            $rides = $rides->whereBetween('ride_date',[$from_date,$to_date]);
+        }else{
+            $rides = $rides->where('ride_date',Carbon::now()->toDateString());
+        }
+
+        $rides = $rides->get();
+
+        $file_name = 'rides_export_' . now()->format('Ymd_His') . '.xlsx';
+        
+        return Excel::download(new RidesExport($rides), $file_name);
+        
+     } 
+
+     public function update_ride_informations(Request $request){
+
+        $request->validate(
+            [
+                'ride_id' => 'required',
+                'tve_booking_number' => 'nullable',
+                'payment_link_confirmation' => 'required',
+                'serial_number' => 'nullable',
+                'source_report' => 'nullable',
+                'ride_extra_details' => 'nullable'
+            ]
+            );
+
+        Ride::where('id',$request->ride_id)->update(
+            [
+                'tve_booking_number' => $request->tve_booking_number,
+                'payment_link_confirmation' =>  $request->payment_link_confirmation,
+                'serial_number' =>  $request->serial_number,
+                'source_report' =>  $request->source_report,
+                'ride_extra_details' =>  $request->ride_extra_details
+            ]
+            );
+
+        session()->flash('success','Ride Informaiton Updated Successfully');
+
+        return redirect()->route('admin.daily.rides.report');
+     }
 }
