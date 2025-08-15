@@ -29,8 +29,8 @@
                             <td>{{ $ride ->booking_code }}</td>
                             <td>{{ $ride->tve_booking_number }}</td>
                             <td>{{ $ride->serial_number }}</td>
-                            <td>{{ \Carbon\Carbon::parse($ride->created_at)->format("h:i A")}}</td>
-                            <td>{{ \Carbon\Carbon::parse($ride->ride_time)->format("h:i A")}}</td>
+                            <td>{{ \Carbon\Carbon::parse($ride->created_at)->format("Y-m-d h:i A")}}</td>
+                            <td>{{ \Carbon\Carbon::parse($ride->date_time)->format("Y-m-d h:i A")}}</td>
                             <td>{{ $ride->source }}</td>
                             <td>{{ $ride->destination }}</td>
                             <td>
