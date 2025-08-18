@@ -16,6 +16,7 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping
     * @return \Illuminate\Support\Collection
     */
     protected $rides;
+    protected $counter = 1;
 
     
 
@@ -40,7 +41,7 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping
         return [
             $ride->booking_code,
             $ride->tve_booking_number,
-            $ride->serial_number,
+            $this->counter++,
             Carbon::parse($ride->created_at)->format("Y-m-d h:i A"),
             Carbon::parse($ride->date_time)->format("Y-m-d h:i A"),
             $ride->source,

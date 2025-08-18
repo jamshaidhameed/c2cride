@@ -24,8 +24,18 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @php
+                        $total_ride_amount = 0;
+                        $assignmed_amount = 0;
+                        $tip_amount = 0;
+                    @endphp
                     @foreach ($rides as $ride)
                         <tr>
+                            @php
+                                $total_ride_amount += $ride->price;
+                                $assignmed_amount += $ride->assigned_amount;
+                                $tip_amount += $ride->tip_amount;
+                            @endphp
                             <td>{{ $ride ->booking_code }}</td>
                             <td>{{ $ride->tve_booking_number }}</td>
                             <td>{{ $loop->iteration }}</td>
@@ -67,5 +77,28 @@
 
                         </tr>
                     @endforeach
+                    <tr>
+                        <td><strong>G.Total</strong></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><strong>{{ $total_ride_amount}}</strong></td>
+                        <td><strong>{{ $assignmed_amount}}</strong></td>
+                        <td></td>
+                        <td></td>
+                        <td><strong>{{ $tip_amount}}</strong></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
                 </tbody>
             </table>
