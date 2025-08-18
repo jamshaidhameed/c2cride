@@ -1397,7 +1397,7 @@ class RideController extends Controller
                 [
                     'ride_id' => $request->ride_id,
                     'user_id' => Auth::user()->id,
-                    'ip_address' => $request->ip,
+                    'ip_address' => $request->ip(),
                     'activity' => $encoded_json
                 ]
                 );
