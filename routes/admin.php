@@ -97,4 +97,6 @@ Route::middleware(['auth', 'redirect_if_not_authenticated'])
          Route::post('update-ride-informaitons',[App\Http\Controllers\Admin\RideController::class,'update_ride_informations'])->name('update.ride.informaitons');
          Route::get('/export-rides',[App\Http\Controllers\Admin\RideController::class,'ride_exports'])->name('export.rides');
 
+         Route::get('get-activity-log/{ride_id}',[App\Http\Controllers\Admin\RideController::class,'activityLogs'])->name('user.activity.logs.list');
+
     });

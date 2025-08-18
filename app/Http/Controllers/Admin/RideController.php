@@ -20,6 +20,7 @@ use App\Models\RideType;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\BecomePartner;
+use App\Models\UserActivityLogs;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -1342,18 +1343,81 @@ class RideController extends Controller
             ]
             );
 
+            $activity = [];
+
+            $ride_info = Ride::where('id',$request->ride_id)->first();
+
+            if (!empty($ride_info)) {
+                
+                if ($ride_info->tve_booking_number != $request->tve_booking_number) {
+                   $activity ['tve_booking_number']=  $request->tve_booking_number; 
+                }
+                if ($ride_info->payment_link_confirmation != $request->payment_link_confirmation) {
+                    
+                    $activity ['payment_link_confirmation']= $request->payment_link_confirmation;
+                }
+
+                if ($ride_info->source_report != $request->source_report) {
+                   $activity ['source_report']=$request->source_report;
+                }
+
+                if ($ride_info->remarks_by_c2c_team != $request->remarks_by_c2c_team) {
+                   $activity ['remarks_by_c2c_team']= $request->remarks_by_c2c_team; 
+                }
+
+                if ($ride_info->ride_extra_details != $request->ride_extra_details) {
+                   $activity ['ride_extra_details']= $request->ride_extra_details; 
+                }
+            }
+
+            $encoded_json = json_encode($activity);
+
+            $decoded_json = json_decode($encoded_json,true);
+
+            // foreach ($decoded_json as $key => $value) {
+                
+            //     echo $key." : ".$value."<br>";
+            // }
+            
+
         Ride::where('id',$request->ride_id)->update(
             [
                 'tve_booking_number' => $request->tve_booking_number,
                 'payment_link_confirmation' =>  $request->payment_link_confirmation,
                 'serial_number' =>  $request->serial_number,
                 'source_report' =>  $request->source_report,
+                'remarks_by_c2c_team' => $request->remarks_by_c2c_team,
                 'ride_extra_details' =>  $request->ride_extra_details
             ]
             );
 
+        if (count($activity) > 0) {
+            
+            UserActivityLogs::create(
+                [
+                    'ride_id' => $request->ride_id,
+                    'user_id' => Auth::user()->id,
+                    'ip_address' => $request->ip,
+                    'activity' => $encoded_json
+                ]
+                );
+        }
+
         session()->flash('success','Ride Informaiton Updated Successfully');
 
         return redirect()->route('admin.daily.rides.report');
+     }
+     public function activityLogs($ride_id){
+
+
+        $ride = Ride::where('id',$ride_id)->first();
+
+        if (empty($ride)) {
+            
+            abort(404);
+        }
+        $activities = UserActivityLogs::where('ride_id',$ride_id)->with(['ride','user'])->get();
+
+        return view('admin.rides.log-list',compact('activities','ride'));
      }
 }

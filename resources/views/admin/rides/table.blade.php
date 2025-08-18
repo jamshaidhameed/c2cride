@@ -28,7 +28,7 @@
                         <tr>
                             <td>{{ $ride ->booking_code }}</td>
                             <td>{{ $ride->tve_booking_number }}</td>
-                            <td>{{ $ride->serial_number }}</td>
+                            <td>{{ $loop->iteration }}</td>
                             <td>{{ \Carbon\Carbon::parse($ride->created_at)->format("Y-m-d h:i A")}}</td>
                             <td>{{ \Carbon\Carbon::parse($ride->date_time)->format("Y-m-d h:i A")}}</td>
                             <td>{{ $ride->source }}</td>
@@ -59,6 +59,9 @@
                             <td>
                                 <div class="table-action">
                                     <a class="edit-booking" data-ride_id="{{$ride->id}}" href="javascript:void(0)" data-tve_booking_number="{{ $ride->tve_booking_number}}" data-serial_number="{{ $ride->serial_number }}" data-payment_link_confirmation="{{ $ride->payment_link_confirmation }}" data-source_report = "{{ $ride->source_report }}" data-remarks_by_c2c_team="{{ $ride->remarks_by_c2c_team }}" data-ride_extra_details = "{{ $ride->ride_extra_details}}"><img src="{{asset('images/edit_icon_t.svg')}}" alt=""></a>
+                                    <a target="_blank" class="view-change-log" href="{{ route('admin.user.activity.logs.list',$ride->id) }}" data-ride_id = "{{ $ride->id }}">
+                                        <img src="{{ asset('images/calender_icon_t.svg') }}" alt="">
+                                    </a>
                                 </div>
                             </td>
 

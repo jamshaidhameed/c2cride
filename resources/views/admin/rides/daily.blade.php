@@ -102,10 +102,10 @@
                 </div>
 
                 <div class="col col-md-6">
-                    <div class="form-group">
+                    {{-- <div class="form-group">
                         <label for="" class="form-control-label">Serial Number	</label>
                         <input type="text" name="serial_number" id="" class="form-control" value="">
-                    </div>
+                    </div> --}}
                     <div class="form-group">
                         <label for="" class="form-control-label">Source</label>
                         <input type="text" name="source_report" id="" class="form-control" value="">
@@ -193,4 +193,5 @@
         $('#largeModal').modal('show');
     })
 </script>
+
 @endsection
