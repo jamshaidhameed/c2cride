@@ -466,13 +466,13 @@ class HomeController extends Controller
             $parent = Ride::where('user_id',$user->id)->orderBy('id','DESC')->first();
         }
 
-         Ride::where('id', $parent->id)->update([
-            'status' => 4,
-        ]);
+        //  Ride::where('id', $parent->id)->update([
+        //     'status' => 4,
+        // ]);
 
-        Ride::where('parent_id', $parent->id)->update([
-            'status' => 4,
-        ]);
+        // Ride::where('parent_id', $parent->id)->update([
+        //     'status' => 4,
+        // ]);
 
         
         session()->forget(['step_two_data', 'step_two_data']);
@@ -643,16 +643,16 @@ class HomeController extends Controller
         
         session()->forget(['step_one_data', 'step_two_data','payment_method',"copoun_applied"]);
 
-        if($ride->payment_method =='card'){
+        // if($ride->payment_method =='card'){
 
-            $email = new BookingConfirm($user, $ride);
-            Mail::to($ride->email)->send($email);
+        //     $email = new BookingConfirm($user, $ride);
+        //     Mail::to($ride->email)->send($email);
 
-        }else{
+        // }else{
             $email = new BookingRequest($user, $ride);
             Mail::to($ride->email)->send($email);
           
-        }
+        // }
 
         foreach ($admins as $admin) {
             $email = new AdminRequest($admin, $ride);
