@@ -675,11 +675,20 @@ class HomeController extends Controller
           $rides->whereIn('driver_id',$user_ids);
         }
 
+        $payment_filter = "";
+
+        if (!empty($request->payment_type)) {
+            
+            $rides->where('payment_method',$request->payment_type);
+
+            $payment_filter = $request->payment_type;
+        }
+
         $status_filter = $request->status_filter;
 
        $rides =  $rides->whereBetween("ride_date",[$start_date,$today])->select('driver_id',DB::raw("SUM(assigned_amount) as assigned_amount"),DB::raw('count(id) as total_rides'),DB::raw('SUM(price) as total_amount'))->whereNotNull('driver_id')->groupBy('driver_id')->orderBy('id','desc')->with('driver')->get();
 
-        return view('admin.earning.index',compact('start_date','today','rides','drivers_list','driver_id','company_names','company_filter','status_filter'));
+        return view('admin.earning.index',compact('start_date','today','rides','drivers_list','driver_id','company_names','company_filter','status_filter','payment_filter'));
     }
 
     public function driver_rides($driver_id,$start_date,$end_date,$status){

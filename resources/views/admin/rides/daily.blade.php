@@ -25,6 +25,18 @@
   #largeModal form .form-group label {
         float: left;
   }
+  .table tbody tr td {
+        vertical-align: middle;
+  }
+  .odd-row {
+    background-color: #F5F5F5;
+    border: 2px solid #D3D3D3;
+  }
+  .even-row {
+
+    background-color: #D3D3D3;
+    border: 2px solid #F5F5F5;
+  }
 
 </style>
 @endsection
@@ -44,15 +56,19 @@
                 <form action="{{ route('admin.rides.apply.filters') }}" method="post" id="apply_filters">
                     @csrf
                     <div class="row">
-                        <div class="col col-md-4">
+                        <div class="col col-md-3">
+                            <label for="" class="form-control-label">Booking Number</label>
+                            <input type="text" name="booking_number" id="" class="form-control">
+                        </div>
+                        <div class="col col-md-3">
                             <label for="" class="form-control-label">From Date</label>
-                            <input type="date" name="from_date" id="" class="form-control" required>
+                            <input type="date" name="from_date" id="" class="form-control">
                         </div>
-                        <div class="col col-md-4">
+                        <div class="col col-md-3">
                             <label for="" class="form-control-label">To Date</label>
-                            <input type="date" name="to_date" id="" class="form-control" required>
+                            <input type="date" name="to_date" id="" class="form-control">
                         </div>
-                        <div class="col col-md-4">
+                        <div class="col col-md-3">
                             <button type="submit" class="btn btn-success btn-sm" style="    margin-top: 23px;">Apply Filter</button>
                         </div>
                     </div>
@@ -83,6 +99,7 @@
             <form action="{{ route('admin.update.ride.informaitons') }}" method="POST">
                 @csrf 
                 <input type="hidden" name="ride_id" value="">
+                <input type="hidden" name="ride_from" value="">
             <div class="modal-body">
                <div class="row">
 
@@ -102,13 +119,18 @@
                 </div>
 
                 <div class="col col-md-6">
-                    {{-- <div class="form-group">
-                        <label for="" class="form-control-label">Serial Number	</label>
-                        <input type="text" name="serial_number" id="" class="form-control" value="">
-                    </div> --}}
+                    <div class="form-group">
+                        <label for="" class="form-control-label">Fine Amount	</label>
+                        <input type="number" min="0" name="fine_amount" id="" class="form-control" value="">
+                    </div>
                     <div class="form-group">
                         <label for="" class="form-control-label">Source</label>
-                        <input type="text" name="source_report" id="" class="form-control" value="">
+                        {{-- <input type="text" name="source_report" id="" class="form-control" value=""> --}}
+                        <select name="source_report" id="" class="form-control">
+                            <option value="">Please Choose</option>
+                            <option value="watsapp">Watsapp</option>
+                            <option value="b2b">B2B</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="" class="form-control-label">Extra Details</label>
@@ -178,18 +200,20 @@
 
         var id = $(this).data("ride_id"),
             tve_booking_number = $(this).data("tve_booking_number"),
-            serial_number = $(this).data("serial_number"),
+            fine_amount = $(this).data("fine_amount"),
             payment_link_confirmation = $(this).data("payment_link_confirmation"),
             source_report = $(this).data("source_report"),
             remarks_by_c2c_team = $(this).data("remarks_by_c2c_team"),
-            ride_extra_details = $(this).data("ride_extra_details");
+            ride_extra_details = $(this).data("ride_extra_details"),
+            ride_from = $(this).data("ride_from");
         $('#largeModal').find('form').find('[name="ride_id"]').val(id);
         $('#largeModal').find('form').find('[name="tve_booking_number"]').val(tve_booking_number);
-        $('#largeModal').find('form').find('[name="serial_number"]').val(serial_number);
+        $('#largeModal').find('form').find('[name="fine_amount"]').val(fine_amount);
         $('#largeModal').find('form').find('[name="payment_link_confirmation"]').val(payment_link_confirmation);
         $('#largeModal').find('form').find('[name="source_report"]').val(source_report);
         $('#largeModal').find('form').find('[name="remarks_by_c2c_team"]').val(remarks_by_c2c_team);
         $('#largeModal').find('form').find('[name="ride_extra_details"]').val(ride_extra_details);
+        $("#largeModal").find("form").find('[name="ride_from"]').val(ride_from);
         $('#largeModal').modal('show');
     })
 </script>
