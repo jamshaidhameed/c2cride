@@ -21,6 +21,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\BecomePartner;
 use App\Models\UserActivityLogs;
+use App\Models\City2CityRide;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -1263,19 +1264,57 @@ class RideController extends Controller
         $fields = $request->all();
 
         
-        $rides = Ride::with('user');
+        $c2crides = Ride::query();
 
         if ($request->filled('from_date') && $request->filled("to_date")) {
             
             $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
             $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
 
-            $rides = $rides->whereBetween('ride_date',[$from_date,$to_date]);
+            $c2crides = $c2crides->whereBetween('ride_date',[$from_date,$to_date]);
         }else{
-            $rides = $rides->where('ride_date',Carbon::now()->toDateString());
+            $c2crides = $c2crides->where('ride_date',Carbon::now()->toDateString());
         }
 
-        $rides = $rides->get();
+        $c2crides = $c2crides->orderBy('date_time','ASC')->get();
+
+        // $city2cityrides = City2CityRide::query();
+
+        // if ($request->filled('from_date') && $request->filled("to_date")) {
+
+        //     $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
+        //     $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
+
+        //     $city2cityrides = $city2cityrides->whereBetween('date_time',[$from_date,$to_date]);
+        // }else if($request->filled('booking_number')){
+
+        //     $city2cityrides = $city2cityrides->where('booking_code',$request->booking_number);
+        // }else{
+
+        //     $city2cityrides = $city2cityrides->whereDate('date_time',Carbon::today());
+        // }
+
+        // $city2cityrides = $city2cityrides->orderBy('date_time','ASC')->get();
+
+        $result_arr = null;
+
+        $first_array = $c2crides->map(function($item){
+            $item->ride_from = "c2cride";
+            return $item;
+        });
+
+        // $second_array = $city2cityrides->map(function($item) {
+        //     $item->ride_from = "city2city";
+
+        //     return $item;
+        // });
+
+        // $merged = $first_array->merge($second_array);
+
+        $rides = $first_array;
+        // $merged->sortBy("date_time");
+
+        // return $rides;
 
 
         return view('admin.rides.daily',compact('rides'));
@@ -1285,19 +1324,64 @@ class RideController extends Controller
 
         $request->validate(
             [
-                'from_date' => 'required',
-                'to_date' => 'required'
+                'from_date' => 'nullable',
+                'to_date' => 'nullable',
+                'booking_number' => 'nullable'
             ]
             );
+
+         $fields = $request->all();
+
         
-        $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
-        $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
+        $c2crides = Ride::query();
 
-        $rides = Ride::with('user');
+        if ($request->filled('from_date') && $request->filled("to_date")) {
+            
+            $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
+            $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
 
-        $rides = $rides->whereBetween('ride_date',[$from_date,$to_date]);
+            $c2crides = $c2crides->whereBetween('ride_date',[$from_date,$to_date]);
+        }else{
+            $c2crides = $c2crides->where('ride_date',Carbon::now()->toDateString());
+        }
 
-        $rides = $rides->get();
+        $c2crides = $c2crides->orderBy('date_time','ASC')->get();
+
+        // $city2cityrides = City2CityRide::query();
+
+        // if ($request->filled('from_date') && $request->filled("to_date")) {
+
+        //     $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
+        //     $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
+
+        //     $city2cityrides = $city2cityrides->whereBetween('date_time',[$from_date,$to_date]);
+        // }else if($request->filled('booking_number')){
+
+        //     $city2cityrides = $city2cityrides->where('booking_code',$request->booking_number);
+        // }else{
+
+        //     $city2cityrides = $city2cityrides->whereDate('date_time',Carbon::today());
+        // }
+
+        // $city2cityrides = $city2cityrides->orderBy('date_time','ASC')->get();
+
+        $result_arr = null;
+
+        $first_array = $c2crides->map(function($item){
+            $item->ride_from = "c2cride";
+            return $item;
+        });
+
+        // $second_array = $city2cityrides->map(function($item) {
+        //     $item->ride_from = "city2city";
+
+        //     return $item;
+        // });
+
+        // $merged = $first_array->merge($second_array);
+
+        $rides = $first_array->sortBy('date_time');
+        //$merged->sortBy("date_time");
 
         $response = view('admin.rides.table', compact('rides'))->render();
 
@@ -1309,20 +1393,57 @@ class RideController extends Controller
 
 
            $fields = $request->all();
-            
-            $rides = Ride::with('user');
+
+        
+        $c2crides = Ride::query();
 
         if ($request->filled('from_date') && $request->filled("to_date")) {
             
             $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
             $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
 
-            $rides = $rides->whereBetween('ride_date',[$from_date,$to_date]);
+            $c2crides = $c2crides->whereBetween('ride_date',[$from_date,$to_date]);
         }else{
-            $rides = $rides->where('ride_date',Carbon::now()->toDateString());
+            $c2crides = $c2crides->where('ride_date',Carbon::now()->toDateString());
         }
 
-        $rides = $rides->get();
+        $c2crides = $c2crides->orderBy('date_time','ASC')->get();
+
+        // $city2cityrides = City2CityRide::query();
+
+        // if ($request->filled('from_date') && $request->filled("to_date")) {
+
+        //     $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
+        //     $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
+
+        //     $city2cityrides = $city2cityrides->whereBetween('date_time',[$from_date,$to_date]);
+        // }else if($request->filled('booking_number')){
+
+        //     $city2cityrides = $city2cityrides->where('booking_code',$request->booking_number);
+        // }else{
+
+        //     $city2cityrides = $city2cityrides->whereDate('date_time',Carbon::today());
+        // }
+
+        // $city2cityrides = $city2cityrides->orderBy('date_time','ASC')->get();
+
+        $result_arr = null;
+
+        $first_array = $c2crides->map(function($item){
+            $item->ride_from = "c2cride";
+            return $item;
+        });
+
+        // $second_array = $city2cityrides->map(function($item) {
+        //     $item->ride_from = "city2city";
+
+        //     return $item;
+        // });
+
+        // $merged = $first_array->merge($second_array);
+
+        $rides = $first_array;
+        //$merged->sortBy("date_time");
 
         $file_name = 'rides_export_' . now()->format('Ymd_His') . '.xlsx';
         
@@ -1339,10 +1460,14 @@ class RideController extends Controller
                 'payment_link_confirmation' => 'required',
                 'serial_number' => 'nullable',
                 'source_report' => 'nullable',
-                'ride_extra_details' => 'nullable'
+                'ride_extra_details' => 'nullable',
+                'ride_from' => 'required'
             ]
             );
 
+            if ($request->input("ride_from") == "c2cride") {
+                
+            
             $activity = [];
 
             $ride_info = Ride::where('id',$request->ride_id)->first();
@@ -1384,7 +1509,7 @@ class RideController extends Controller
             [
                 'tve_booking_number' => $request->tve_booking_number,
                 'payment_link_confirmation' =>  $request->payment_link_confirmation,
-                'serial_number' =>  $request->serial_number,
+                'fine_amount' =>  $request->fine_amount,
                 'source_report' =>  $request->source_report,
                 'remarks_by_c2c_team' => $request->remarks_by_c2c_team,
                 'ride_extra_details' =>  $request->ride_extra_details
@@ -1402,6 +1527,20 @@ class RideController extends Controller
                 ]
                 );
         }
+
+    }else{
+
+        DB::connection('mysql1')->table('rides')->where('id',$request->ride_id)->update(
+            [
+                'fine_amount' => $request->fine_amount,
+                'tve_booking_number' => $request->tve_booking_number,
+                'payment_link_confirmation' => $request->payment_link_confirmation,
+                'source_report' => $request->source_report,
+                'remarks_by_c2c_team' => $request->remarks_by_c2c_team,
+                'ride_extra_details' => $request->ride_extra_details
+            ]
+            );
+    }
 
         session()->flash('success','Ride Informaiton Updated Successfully');
 

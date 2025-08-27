@@ -61,7 +61,7 @@ class Ride extends Model
         'currency',
         'cancel_by',
         'tve_booking_number',
-        'serial_number',
+        'fine_amount',
         'payment_link_confirmation',
         'source_report',
         'remarks_by_c2c_team',
