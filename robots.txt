@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /login/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /tmp/
+Disallow: /private/
+
+Allow: /
+
+Sitemap: https://c2cride.com/sitemap.xml
