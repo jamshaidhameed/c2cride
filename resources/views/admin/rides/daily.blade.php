@@ -28,15 +28,7 @@
   .table tbody tr td {
         vertical-align: middle;
   }
-  .odd-row {
-    background-color: #F5F5F5;
-    border: 2px solid #D3D3D3;
-  }
-  .even-row {
-
-    background-color: #D3D3D3;
-    border: 2px solid #F5F5F5;
-  }
+ 
 
 </style>
 @endsection

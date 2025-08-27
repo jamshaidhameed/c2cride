@@ -48,7 +48,7 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping, WithCust
     public function headings(): array
     {
         return [
-            'Ride From','Booking Number', 'Tve Booking Number','Serial Number','Ride Booking Time','Ride Time',
+            'Booking Number', 'Tve Booking Number','Serial Number','Ride Booking Time','Ride Time',
             'Pick Up Location','Dropoff Location','Client Name/ Email','Ride Amount',
             'Assigned amount','Payment Method','Payment link confirmation','Driver`s Tip',
             'Company Name','Driver Name','Source','Remark by c2c team','Cancelled Ride/ Feedback',
@@ -62,7 +62,7 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping, WithCust
         $remarks_arr = !empty($remarks) ? explode(",", $remarks) : [];
 
         return [
-            $ride->ride_from,
+            // $ride->ride_from,
             $ride->booking_code,
             $ride->tve_booking_number,
             $this->counter++,

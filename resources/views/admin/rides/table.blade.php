@@ -51,7 +51,7 @@
 <table class="table table-bordered table-sm">
                 <thead>
                     <tr>
-                        <th>Ride From</th>
+                        {{-- <th>Ride From</th> --}}
                         <th>Booking Number</th>
                         <th>Tve Booking Number</th>
                         <th>Serial Number</th>
@@ -96,9 +96,9 @@
                                 $tip_amount += $ride->tip_amount;
                                 $fine_amount += $ride->fine_amount;
                             @endphp
-                            <td>
+                            {{-- <td>
                                 {{ $ride->ride_from }}
-                            </td>
+                            </td> --}}
                             <td 
                             @if ($ride->status == '1') 
                             class="bg-success text-white"
