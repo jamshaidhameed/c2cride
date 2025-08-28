@@ -1341,7 +1341,11 @@ class RideController extends Controller
             $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
 
             $c2crides = $c2crides->whereBetween('ride_date',[$from_date,$to_date]);
-        }else{
+        }else if($request->filled("booking_number")){
+            
+            $c2crides = $c2crides->where('booking_code',$request->input("booking_number"));
+        }
+        else{
             $c2crides = $c2crides->where('ride_date',Carbon::now()->toDateString());
         }
 
@@ -1403,6 +1407,9 @@ class RideController extends Controller
             $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
 
             $c2crides = $c2crides->whereBetween('ride_date',[$from_date,$to_date]);
+        }else if($request->filled("booking_number")){
+            
+            $c2crides = $c2crides->where('booking_code',$request->input("booking_number"));
         }else{
             $c2crides = $c2crides->where('ride_date',Carbon::now()->toDateString());
         }
