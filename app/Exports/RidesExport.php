@@ -24,8 +24,6 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping, WithCust
         $this->summary = [
             'Number of Rides'   => $rides->count(),
             'Thriwe'            => collect($rides)->where('source_report','b2b')->count(),
-            'C2C Rides'         => $rides->where('ride_from', 'c2cride')->count(),
-            'City2City Rides'   => $rides->where('ride_from', 'city2city')->count(),
             'Successfull'       => $rides->where('status','1')->count(),
             'Failed'            => $rides->where('status','3')->count(),
             'Watsapp'           => $rides->where('source_report','watsapp')->count(),

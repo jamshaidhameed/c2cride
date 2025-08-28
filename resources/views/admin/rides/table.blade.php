@@ -17,14 +17,14 @@
                 <div class="status-value pending-color-text">{{ $rides_collection->where('source_report','b2b')->count() }}</div>
             </a>
         </li>
-        <li><a data-status_id="4" href="javascript:void(0)">
+        {{-- <li><a data-status_id="4" href="javascript:void(0)">
                 <div class="status-title">C2CRides</div>
                 <div class="status-value confirmed-color-text">{{ $rides_collection->where('ride_from','c2cride')->count() }}</div>
             </a></li>
         <li><a data-status_id="1" href="javascript:void(0)">
                 <div class="status-title">City2City</div>
                 <div class="status-value completed-color-text">{{ $rides_collection->where('ride_from','city2city')->count() }}</div>
-            </a></li>
+            </a></li> --}}
         <li><a data-status_id="3"href="javascript:void(0)">
                 <div class="status-title">Successfull</div>
                 <div class="status-value confirmed-color-text">{{ $rides_collection->where('status','1')->count() }}</div>
