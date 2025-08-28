@@ -1271,30 +1271,30 @@ class RideController extends Controller
             $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
             $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
 
-            $c2crides = $c2crides->whereBetween('ride_date',[$from_date,$to_date]);
+            $c2crides = $c2crides->whereBetween('date_time',[$from_date,$to_date]);
         }else{
             $c2crides = $c2crides->where('ride_date',Carbon::now()->toDateString());
         }
 
         $c2crides = $c2crides->orderBy('date_time','ASC')->get();
 
-        // $city2cityrides = City2CityRide::query();
+        $city2cityrides = City2CityRide::query();
 
-        // if ($request->filled('from_date') && $request->filled("to_date")) {
+        if ($request->filled('from_date') && $request->filled("to_date")) {
 
-        //     $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
-        //     $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
+            $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
+            $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
 
-        //     $city2cityrides = $city2cityrides->whereBetween('date_time',[$from_date,$to_date]);
-        // }else if($request->filled('booking_number')){
+            $city2cityrides = $city2cityrides->whereBetween('date_time',[$from_date,$to_date]);
+        }else if($request->filled('booking_number')){
 
-        //     $city2cityrides = $city2cityrides->where('booking_code',$request->booking_number);
-        // }else{
+            $city2cityrides = $city2cityrides->where('booking_code',$request->booking_number);
+        }else{
 
-        //     $city2cityrides = $city2cityrides->whereDate('date_time',Carbon::today());
-        // }
+            $city2cityrides = $city2cityrides->whereDate('date_time',Carbon::today());
+        }
 
-        // $city2cityrides = $city2cityrides->orderBy('date_time','ASC')->get();
+        $city2cityrides = $city2cityrides->orderBy('date_time','ASC')->get();
 
         $result_arr = null;
 
@@ -1303,16 +1303,15 @@ class RideController extends Controller
             return $item;
         });
 
-        // $second_array = $city2cityrides->map(function($item) {
-        //     $item->ride_from = "city2city";
+        $second_array = $city2cityrides->map(function($item) {
+            $item->ride_from = "city2city";
 
-        //     return $item;
-        // });
+            return $item;
+        });
 
-        // $merged = $first_array->merge($second_array);
+        $merged = $first_array->merge($second_array);
 
-        $rides = $first_array;
-        // $merged->sortBy("date_time");
+        $rides =  $merged->sortBy("date_time");
 
         // return $rides;
 
@@ -1340,7 +1339,7 @@ class RideController extends Controller
             $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
             $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
 
-            $c2crides = $c2crides->whereBetween('ride_date',[$from_date,$to_date]);
+            $c2crides = $c2crides->whereBetween('date_time',[$from_date,$to_date]);
         }else if($request->filled("booking_number")){
             
             $c2crides = $c2crides->where('booking_code',$request->input("booking_number"));
@@ -1351,23 +1350,23 @@ class RideController extends Controller
 
         $c2crides = $c2crides->orderBy('date_time','ASC')->get();
 
-        // $city2cityrides = City2CityRide::query();
+        $city2cityrides = City2CityRide::query();
 
-        // if ($request->filled('from_date') && $request->filled("to_date")) {
+        if ($request->filled('from_date') && $request->filled("to_date")) {
 
-        //     $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
-        //     $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
+            $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
+            $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
 
-        //     $city2cityrides = $city2cityrides->whereBetween('date_time',[$from_date,$to_date]);
-        // }else if($request->filled('booking_number')){
+            $city2cityrides = $city2cityrides->whereBetween('date_time',[$from_date,$to_date]);
+        }else if($request->filled('booking_number')){
 
-        //     $city2cityrides = $city2cityrides->where('booking_code',$request->booking_number);
-        // }else{
+            $city2cityrides = $city2cityrides->where('booking_code',$request->booking_number);
+        }else{
 
-        //     $city2cityrides = $city2cityrides->whereDate('date_time',Carbon::today());
-        // }
+            $city2cityrides = $city2cityrides->whereDate('date_time',Carbon::today());
+        }
 
-        // $city2cityrides = $city2cityrides->orderBy('date_time','ASC')->get();
+        $city2cityrides = $city2cityrides->orderBy('date_time','ASC')->get();
 
         $result_arr = null;
 
@@ -1376,16 +1375,15 @@ class RideController extends Controller
             return $item;
         });
 
-        // $second_array = $city2cityrides->map(function($item) {
-        //     $item->ride_from = "city2city";
+        $second_array = $city2cityrides->map(function($item) {
+            $item->ride_from = "city2city";
 
-        //     return $item;
-        // });
+            return $item;
+        });
 
-        // $merged = $first_array->merge($second_array);
+        $merged = $first_array->merge($second_array);
 
-        $rides = $first_array->sortBy('date_time');
-        //$merged->sortBy("date_time");
+        $rides = $merged->sortBy("date_time");
 
         $response = view('admin.rides.table', compact('rides'))->render();
 
@@ -1406,7 +1404,7 @@ class RideController extends Controller
             $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
             $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
 
-            $c2crides = $c2crides->whereBetween('ride_date',[$from_date,$to_date]);
+            $c2crides = $c2crides->whereBetween('date_time',[$from_date,$to_date]);
         }else if($request->filled("booking_number")){
             
             $c2crides = $c2crides->where('booking_code',$request->input("booking_number"));
@@ -1416,23 +1414,23 @@ class RideController extends Controller
 
         $c2crides = $c2crides->orderBy('date_time','ASC')->get();
 
-        // $city2cityrides = City2CityRide::query();
+        $city2cityrides = City2CityRide::query();
 
-        // if ($request->filled('from_date') && $request->filled("to_date")) {
+        if ($request->filled('from_date') && $request->filled("to_date")) {
 
-        //     $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
-        //     $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
+            $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
+            $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
 
-        //     $city2cityrides = $city2cityrides->whereBetween('date_time',[$from_date,$to_date]);
-        // }else if($request->filled('booking_number')){
+            $city2cityrides = $city2cityrides->whereBetween('date_time',[$from_date,$to_date]);
+        }else if($request->filled('booking_number')){
 
-        //     $city2cityrides = $city2cityrides->where('booking_code',$request->booking_number);
-        // }else{
+            $city2cityrides = $city2cityrides->where('booking_code',$request->booking_number);
+        }else{
 
-        //     $city2cityrides = $city2cityrides->whereDate('date_time',Carbon::today());
-        // }
+            $city2cityrides = $city2cityrides->whereDate('date_time',Carbon::today());
+        }
 
-        // $city2cityrides = $city2cityrides->orderBy('date_time','ASC')->get();
+        $city2cityrides = $city2cityrides->orderBy('date_time','ASC')->get();
 
         $result_arr = null;
 
@@ -1441,16 +1439,15 @@ class RideController extends Controller
             return $item;
         });
 
-        // $second_array = $city2cityrides->map(function($item) {
-        //     $item->ride_from = "city2city";
+        $second_array = $city2cityrides->map(function($item) {
+            $item->ride_from = "city2city";
 
-        //     return $item;
-        // });
+            return $item;
+        });
 
-        // $merged = $first_array->merge($second_array);
+        $merged = $first_array->merge($second_array);
 
-        $rides = $first_array;
-        //$merged->sortBy("date_time");
+        $rides = $merged->sortBy("date_time");
 
         $file_name = 'rides_export_' . now()->format('Ymd_His') . '.xlsx';
         

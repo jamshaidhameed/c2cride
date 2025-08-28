@@ -23,7 +23,9 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping, WithCust
         // Your summary array
         $this->summary = [
             'Number of Rides'   => $rides->count(),
-            'Thriwe'            => collect($rides)->where('source_report','b2b')->count(),
+            'B2B'               => collect($rides)->where('source_report','b2b')->count(),
+            'C2C Rides'         => $rides->where('ride_from','c2cride')->count(),
+            'City2City Rides'   => $rides->where('ride_from','city2city')->count(),
             'Successfull'       => $rides->where('status','1')->count(),
             'Failed'            => $rides->where('status','3')->count(),
             'Watsapp'           => $rides->where('source_report','watsapp')->count(),
@@ -46,11 +48,11 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping, WithCust
     public function headings(): array
     {
         return [
-            'Booking Number', 'Tve Booking Number','Serial Number','Ride Booking Time','Ride Time',
-            'Pick Up Location','Dropoff Location','Client Name/ Email','Ride Amount',
+            'Ride From','Booking Number', 'Tve Booking Number','Serial Number','Ride Booking Time','Ride Time',
+            'Pick Up Location','Dropoff Location','Client Name/ Email','Ride Extra details','Ride Amount',
             'Assigned amount','Payment Method','Payment link confirmation','Driver`s Tip',
             'Company Name','Driver Name','Source','Remark by c2c team','Cancelled Ride/ Feedback',
-            'Ride Extra details'
+            'Fine Amount'
         ];
     }
 
@@ -60,7 +62,7 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping, WithCust
         $remarks_arr = !empty($remarks) ? explode(",", $remarks) : [];
 
         return [
-            // $ride->ride_from,
+            $ride->ride_from,
             $ride->booking_code,
             $ride->tve_booking_number,
             $this->counter++,
@@ -69,6 +71,7 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping, WithCust
             $ride->source,
             $ride->destination,
             $ride->display_name . " / " . $ride->email,
+            $ride->ride_extra_details,
             $ride->price,
             $ride->assigned_amount,
             ucwords($ride->payment_method),
@@ -79,7 +82,7 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping, WithCust
             $ride->source_report,
             $ride->remarks_by_c2c_team,
             count($remarks_arr) > 0 ? implode(",", $remarks_arr) : "",
-            $ride->ride_extra_details
+            $ride->fine_amount
         ];
     }
 

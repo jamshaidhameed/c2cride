@@ -13,7 +13,7 @@
             </a></li>
         <li>
             <a data-status_id="2" href="javascript:void(0)">
-                <div class="status-title">Thriwe</div>
+                <div class="status-title">B2B</div>
                 <div class="status-value pending-color-text">{{ $rides_collection->where('source_report','b2b')->count() }}</div>
             </a>
         </li>
@@ -51,7 +51,7 @@
 <table class="table table-bordered table-sm">
                 <thead>
                     <tr>
-                        {{-- <th>Ride From</th> --}}
+                        <th>Ride From</th>
                         <th>Booking Number</th>
                         <th>Tve Booking Number</th>
                         <th>Serial Number</th>
@@ -60,7 +60,7 @@
                         <th>Pick Up Location</th>
                         <th>Dropoff Location</th>
                         <th>Client Name/ Email</th>
-                        <th>Fine Amount</th>
+                        <th>Ride Extra details </th>
                         <th>Ride Amount</th>
                         <th>Assigned amount</th>
                         <th>Payment Method</th>
@@ -71,7 +71,7 @@
                         <th>Source</th>
                         <th>Remark by c2c team</th>
                         <th>Cancelled Ride/ Feedback</th>
-                        <th>Ride Extra details </th>
+                        <th>Fine Amount</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -84,10 +84,9 @@
                     @endphp
                     @foreach ($rides as $ride)
                         <tr
-                         @if ($loop->iteration % 2 == 0 )
-                             class="even-row"
-                         @else 
-                         class="odd-row"
+                         @if ($loop->iteration % 2 != 0 )
+                             class="custom-row"
+                         
                          @endif
                         >
                             @php
@@ -96,14 +95,16 @@
                                 $tip_amount += $ride->tip_amount;
                                 $fine_amount += $ride->fine_amount;
                             @endphp
-                            {{-- <td>
+                            <td>
                                 {{ $ride->ride_from }}
-                            </td> --}}
+                            </td>
                             <td 
-                            @if ($ride->status == '1') 
-                            class="bg-success text-white"
+                            @if ($ride->status == '4') 
+                              style="background-color: #0fa85c !important;color: white;"
+                            @elseif($ride->status == "2")
+                             style="background-color: rgb(220, 170, 53) !important;color: white;"
                             @elseif($ride->status == '3')
-                            class="bg-danger text-white"    
+                             style="background-color: rgb(220, 53, 59) !important;color: white;"  
                             @endif
                             >{{ $ride ->booking_code }}</td>
                             <td>{{ $ride->tve_booking_number }}</td>
@@ -115,7 +116,7 @@
                             <td>
                                 {{ $ride->display_name }} / {{ $ride->email }}
                             </td>
-                            <td>{{ $ride->fine_amount}}</td>
+                            <td>{{ $ride->ride_extra_details }}</td>
                             <td>{{ $ride->price }}</td>
                             <td>{{ $ride->assigned_amount }}</td>
                             <td>{{ ucwords($ride->payment_method) }}</td>
@@ -142,7 +143,8 @@
                                     {{ $item }} <br>
                                 @endforeach
                             </td>
-                            <td>{{ $ride->ride_extra_details }}</td>
+                             <td>{{ $ride->fine_amount}}</td>
+                            
                             <td>
                                 <div class="table-action">
                                     <a class="edit-booking" data-ride_id="{{$ride->id}}" href="javascript:void(0)" data-tve_booking_number="{{ $ride->tve_booking_number}}" data-fine_amount="{{ $ride->fine_amount }}" data-payment_link_confirmation="{{ $ride->payment_link_confirmation }}" data-source_report = "{{ $ride->source_report }}" data-remarks_by_c2c_team="{{ $ride->remarks_by_c2c_team }}" data-ride_extra_details = "{{ $ride->ride_extra_details}}" data-ride_from="{{ $ride->ride_from}}"><img src="{{asset('images/edit_icon_t.svg')}}" alt=""></a>
@@ -163,7 +165,8 @@
                         <td></td>
                         <td></td>
                         <td></td>
-                        <td><strong>{{ $fine_amount }}</strong></td>
+                        <td></td>
+                        <td></td>
                         <td><strong>{{ $total_ride_amount}}</strong></td>
                         <td><strong>{{ $assignmed_amount}}</strong></td>
                         <td></td>
@@ -174,7 +177,7 @@
                         <td></td>
                         <td></td>
                         <td></td>
-                        <td></td>
+                        <td><strong>{{ $fine_amount }}</strong></td>
                         <td></td>
                     </tr>
                 </tbody>

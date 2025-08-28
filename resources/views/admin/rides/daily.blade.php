@@ -28,7 +28,23 @@
   .table tbody tr td {
         vertical-align: middle;
   }
- 
+ .custom-row,.custom-row  td {
+    background-color: #f2f2f2 !important;
+    color:black;
+  }
+   .ride-confirmed {
+    background-color: #0fa85c;
+    color: white;
+   }
+   .ride-canceled {
+    background-color: rgb(220, 53, 59);
+    color: white;
+   }
+   .ride-pending {
+
+    background-color: rgb(220, 170, 53);
+    color: white;
+   }
 
 </style>
 @endsection
