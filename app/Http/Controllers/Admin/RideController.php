@@ -1336,10 +1336,12 @@ class RideController extends Controller
 
         if ($request->filled('from_date') && $request->filled("to_date")) {
             
-            $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
-            $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
-
-            $c2crides = $c2crides->whereBetween('date_time',[$from_date,$to_date]);
+            // $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
+            // $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
+            // $c2crides = $c2crides->whereBetween('date_time',[$from_date,$to_date]);
+            $from_date = Carbon::parse($request->from_date)->startOfDay();
+            $to_date = Carbon::parse($request->to_date)->endOfDay();
+            $c2crides = $c2crides->whereDate('date_time', '>=', $from_date)->whereDate('date_time', '<=', $to_date);
         }else if($request->filled("booking_number")){
             
             $c2crides = $c2crides->where('booking_code',$request->input("booking_number"));
@@ -1354,10 +1356,14 @@ class RideController extends Controller
 
         if ($request->filled('from_date') && $request->filled("to_date")) {
 
-            $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
-            $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
+            // $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
+            // $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
 
-            $city2cityrides = $city2cityrides->whereBetween('date_time',[$from_date,$to_date]);
+            // $city2cityrides = $city2cityrides->whereBetween('date_time',[$from_date,$to_date]);
+             $from_date = Carbon::parse($request->from_date)->startOfDay();
+            $to_date = Carbon::parse($request->to_date)->endOfDay();
+            $city2cityrides = $city2cityrides->whereDate('date_time', '>=', $from_date)->whereDate('date_time', '<=', $to_date);
+            
         }else if($request->filled('booking_number')){
 
             $city2cityrides = $city2cityrides->where('booking_code',$request->booking_number);
@@ -1401,10 +1407,13 @@ class RideController extends Controller
 
         if ($request->filled('from_date') && $request->filled("to_date")) {
             
-            $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
-            $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
+            // $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
+            // $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
 
-            $c2crides = $c2crides->whereBetween('date_time',[$from_date,$to_date]);
+            // $c2crides = $c2crides->whereBetween('date_time',[$from_date,$to_date]);
+            $from_date = Carbon::parse($request->from_date)->startOfDay();
+            $to_date = Carbon::parse($request->to_date)->endOfDay();
+            $c2crides = $c2crides->whereDate('date_time', '>=', $from_date)->whereDate('date_time', '<=', $to_date);
         }else if($request->filled("booking_number")){
             
             $c2crides = $c2crides->where('booking_code',$request->input("booking_number"));
@@ -1418,10 +1427,13 @@ class RideController extends Controller
 
         if ($request->filled('from_date') && $request->filled("to_date")) {
 
-            $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
-            $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
+            // $from_date = Carbon::parse($request->from_date)->format('Y-m-d');
+            // $to_date = Carbon::parse($request->to_date)->format('Y-m-d');
 
-            $city2cityrides = $city2cityrides->whereBetween('date_time',[$from_date,$to_date]);
+            // $city2cityrides = $city2cityrides->whereBetween('date_time',[$from_date,$to_date]);
+            $from_date = Carbon::parse($request->from_date)->startOfDay();
+            $to_date = Carbon::parse($request->to_date)->endOfDay();
+            $city2cityrides = $city2cityrides->whereDate('date_time', '>=', $from_date)->whereDate('date_time', '<=', $to_date);
         }else if($request->filled('booking_number')){
 
             $city2cityrides = $city2cityrides->where('booking_code',$request->booking_number);
