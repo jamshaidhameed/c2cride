@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Vehicle extends Model
 {
-    protected $fillable = ['title','slug','type','passengers','suitcases','free_waiting_time','porter_service','price','discount','apply_discount','images','short_descriptions'];
+    protected $fillable = ['title','slug','type','passengers','suitcases','free_waiting_time','porter_service','price','discount','apply_discount','images','short_descriptions','status'];
 
     function image_list(){
          return $this->hasMany(CarImages::class);

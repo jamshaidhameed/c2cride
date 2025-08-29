@@ -35,6 +35,7 @@
                         <th class="text-center">Passengers</th>
                         <th class="text-center">Suitcases</th>
                         <th class="text-center">Discount % <br>Applied</th>
+                        <th class="text-center">Status</th>
                         <th>Images</th>
                         <th></th>
                     </tr>
@@ -53,6 +54,15 @@
                             <span class="confirm-ride cmpt-green" style=" color:aliceblue !important;min-width: 35px;padding: 10px;">Yes</span>
                             @else
                             <span class="confirm-ride pending-yellow" style=" color:aliceblue !important;min-width: 35px;padding: 10px;">No</span>
+                            @endif
+                            </div>
+                        </td>
+                        <td class="text-center"> 
+                            <div class="gerenric-table-desktop">
+                            @if($car->status == 1)
+                            <span class="confirm-ride cmpt-green" style=" color:aliceblue !important;min-width: 35px;padding: 10px;">Active</span>
+                            @else
+                            <span class="confirm-ride pending-yellow" style=" color:aliceblue !important;min-width: 35px;padding: 10px;">Inactive</span>
                             @endif
                             </div>
                         </td>

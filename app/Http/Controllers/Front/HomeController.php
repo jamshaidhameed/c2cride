@@ -198,7 +198,7 @@ class HomeController extends Controller
 
         $ride_id = session("step_one_data")['ride_type_id'];
 
-        $vehicles = Vehicle::with(['image_list', 'cityridepricing','hourlyridepricing','citytourpricing'])->get();
+        $vehicles = Vehicle::where('status',1)->with(['image_list', 'cityridepricing','hourlyridepricing','citytourpricing'])->get();
         
         $data = session("step_one_data");
         $feature_rates = FeatureRates::first();
