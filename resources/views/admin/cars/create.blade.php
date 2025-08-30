@@ -85,6 +85,18 @@
                                 <label for="" class="form-control-label">Discount %</label>
                                 <input type="number" name="discount" min="0" id="" class="form-control" value="{{ isset($car) ? $car->discount : old('discount') }}" required>
                             </div>
+                            <div class="form-group">
+                                <label for="" class="form-control-label">Status</label>
+                                <select name="status" id="" class="form-control" required>
+                                    <option value="">Please Choose</option>
+                                    <option value="1" @if (isset($car) && $car->status == 1)
+                                        selected 
+                                    @endif>Active</option>
+                                    <option value="0" @if (isset($car) && $car->status == 0)
+                                        selected 
+                                    @endif>Inactive</option>
+                                </select>
+                            </div>
                         </div>
                         {{-- End First Column --}}
                         <div class="col col-md-6">

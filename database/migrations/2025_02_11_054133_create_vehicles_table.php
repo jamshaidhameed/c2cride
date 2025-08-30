@@ -25,6 +25,7 @@ return new class extends Migration
             $table->boolean('apply_discount')->default(false);
             $table->string('images')->nullable();
             $table->string('short_descriptions')->nullable();
+            $table->boolean('status')->default(true);
             $table->timestamps();
         });
     }

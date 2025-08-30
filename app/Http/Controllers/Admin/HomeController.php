@@ -55,6 +55,7 @@ class HomeController extends Controller
             'apply_discount' => 'nullable',
             'images.*' => 'required|image|mimes:jpg,jpeg,png|max:2048',
             'descriptions.*' => 'required|string|max:255',
+            'status' => 'required|in:0,1'
         ]);
 
             //Saving Car Images with Description
@@ -73,7 +74,8 @@ class HomeController extends Controller
                 'discount' => $request->discount,
                 'apply_discount' => $request->apply_discount,
                 'images' =>  '',
-                'short_descriptions' => $request->short_descriptions	
+                'short_descriptions' => $request->short_descriptions,
+                'status' => $request->status	
             ]
             );
 
@@ -149,7 +151,8 @@ class HomeController extends Controller
             'type' => 'required',
             'suitcases' => 'required',
             'porter_service' => 'required',
-            'apply_discount' => 'nullable'
+            'apply_discount' => 'nullable',
+            'status' => 'required|in:0,1'
         ]);
 
            $car = Vehicle::where('id',$id)->first();
@@ -165,7 +168,8 @@ class HomeController extends Controller
                 'discount' => $request->discount,
                 'apply_discount' => $request->apply_discount,
                 'images' => '',
-                'short_descriptions' => $request->short_descriptions	
+                'short_descriptions' => $request->short_descriptions,
+                'status' => $request->status	
             ]
             );
 
