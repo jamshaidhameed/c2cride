@@ -230,4 +230,41 @@
     })
 </script>
 
+<script>
+    $(document).on('click','.filters-list li a',function(e){
+        e.preventDefault();
+        $('.filters-list li a').removeClass('active_status');
+        $(this).addClass('active_status');
+
+        let from_date = $('[name="from_date"]').val(),
+            to_date = $('[name="to_date"]').val(),
+            booking_number = $('[name="booking_number"]').val(),
+            type = $(this).data("type"),
+            value = $(this).data('value');
+
+            $.ajax({
+                type:"post",
+                url:"{{ route('admin.rides.apply.filters') }}",
+                dataType:'json',
+                data:{
+                    _token:"{{ csrf_token() }}",
+                    from_date: from_date,
+                    to_date:to_date,
+                    booking_number: booking_number,
+                    type:type,
+                    value:value
+                },
+                success:function(html){
+                    if (html.status == 200) {
+                        
+                        $('.tablelist').html(html.response);
+                    }
+                },
+                error: function(data) {
+                    alert(data.message);
+                }
+            });
+    });
+</script>
+
 @endsection

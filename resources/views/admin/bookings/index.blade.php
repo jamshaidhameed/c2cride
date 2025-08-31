@@ -1114,7 +1114,7 @@
                     }
                 });
             });
-
+ 
             $('.status-list li a').click(function(e) {
                 e.preventDefault();
                 $('.status-list li a').removeClass('active_status');

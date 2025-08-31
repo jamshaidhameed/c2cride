@@ -1325,7 +1325,9 @@ class RideController extends Controller
             [
                 'from_date' => 'nullable',
                 'to_date' => 'nullable',
-                'booking_number' => 'nullable'
+                'booking_number' => 'nullable',
+                'type' => 'nullable',
+                'value' => 'nullable'
             ]
             );
 
@@ -1391,7 +1393,15 @@ class RideController extends Controller
 
         $rides = $merged->sortBy("date_time");
 
-        $response = view('admin.rides.table', compact('rides'))->render();
+        if ($request->filled('type') && $request->filled('value')) {
+            
+            $rides = $rides->where($request->input('type'),$request->input('value'));
+        }
+        $type = $request->type;
+        $value = $request->value;
+        // return response()->json($rides);
+
+        $response = view('admin.rides.table', compact('rides','type','value'))->render();
 
         return response()->json(['status' => 200, 'response' => $response]);
         
