@@ -6,42 +6,58 @@
     @php
         $rides_collection = collect($rides);
     @endphp
-    <ul class="status-list">
-        <li><a data-status_id="all" class="active_status" href="javascript:void(0)">
+    <ul class="filters-list">
+        <li><a data-status_id="all" class="@if(empty($type) || empty($value)) active_status @endif" href="javascript:void(0)">
                 <div class="status-title">Number of rides</div>
                 <div class="status-value confirmed-color-text all">{{ count($rides) }}</div>
             </a></li>
         <li>
-            <a data-status_id="2" href="javascript:void(0)">
+            <a data-type="source_report" data-value="b2b" @if (isset($type) && isset($value) &&$type=="source_report" && $value="b2b")
+                class="active_status"
+            @endif href="javascript:void(0)">
                 <div class="status-title">B2B</div>
                 <div class="status-value pending-color-text">{{ $rides_collection->where('source_report','b2b')->count() }}</div>
             </a>
         </li>
-        <li><a data-status_id="4" href="javascript:void(0)">
+        <li><a data-type="ride_from" data-value="c2cride" href="javascript:void(0)" @if ((isset($type) && isset($value) ) && ($type=="ride_from" && $value="c2cride"))
+                class="active_status"
+            @endif>
                 <div class="status-title">C2CRides</div>
                 <div class="status-value confirmed-color-text">{{ $rides_collection->where('ride_from','c2cride')->count() }}</div>
             </a></li>
-        <li><a data-status_id="1" href="javascript:void(0)">
+        <li><a data-type="ride_from" data-value="city2city" href="javascript:void(0)" @if ((isset($type) && isset($value)) && ($type=="ride_from" && $value="city2city"))
+                class="active_status"
+            @endif>
                 <div class="status-title">City2City</div>
                 <div class="status-value completed-color-text">{{ $rides_collection->where('ride_from','city2city')->count() }}</div>
             </a></li>
-        <li><a data-status_id="3"href="javascript:void(0)">
+        <li><a data-type="status" data-value="1" href="javascript:void(0)" @if (isset($type) && isset($value) && $type=="status" && $value="1")
+                class="active_status"
+            @endif>
                 <div class="status-title">Successfull</div>
                 <div class="status-value confirmed-color-text">{{ $rides_collection->where('status','1')->count() }}</div>
             </a></li>
-            <li><a data-status_id="3" href="javascript:void(0)">
+            <li><a data-type="status" data-value="3" href="javascript:void(0)" @if (isset($type) && isset($value) && $type=="status" && $value="3")
+                class="active_status"
+            @endif>
                 <div class="status-title">Failed</div>
                 <div class="status-value cancelled-color-text">{{ $rides_collection->where('status','3')->count() }}</div>
             </a></li>
-        <li><a data-status_id="res" href="javascript:void(0)">
+        <li><a data-type="source_report" data-value="watsapp" href="javascript:void(0)" @if (isset($type) && isset($value) && $type=="source_report" && $value="watsapp")
+                class="active_status"
+            @endif>
                 <div class="status-title">Watsapp</div>
                 <div class="status-value reschedule-color-text">{{ $rides_collection->where('source_report','watsapp')->count() }}</div>
         </a></li>
-        <li><a data-status_id="res" href="javascript:void(0)">
+        <li><a data-type="payment_method" data-value="card" href="javascript:void(0)" @if (isset($type) && isset($value) && $type=="payment_method" && $value="card")
+                class="active_status"
+            @endif>
                 <div class="status-title">Card</div>
                 <div class="status-value confirmed-color-text">{{ $rides_collection->where('payment_method','card')->count() }}</div>
         </a></li>
-        <li><a data-status_id="res" href="javascript:void(0)">
+        <li><a data-type="payment_method" data-value="cash" href="javascript:void(0)" @if (isset($type) && isset($value) && $type=="payment_method" && $value="card")
+                class="active_status"
+            @endif>
                 <div class="status-title">Cash</div>
                 <div class="status-value reschedule-color-text">{{ $rides_collection->where('payment_method','cash')->count() }}</div>
         </a></li>
@@ -99,7 +115,7 @@
                                 {{ $ride->ride_from }}
                             </td>
                             <td 
-                            @if ($ride->status == '4') 
+                            @if ($ride->status == '1') 
                               style="background-color: #0fa85c !important;color: white;"
                             @elseif($ride->status == "2")
                              style="background-color: rgb(220, 170, 53) !important;color: white;"
