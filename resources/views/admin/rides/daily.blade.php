@@ -171,12 +171,14 @@
 
    var from_date = $('[name="from_date"]').val(),
         to_date = $('[name="to_date"]').val(),
-        booking_no = $('[name="booking_number"]').val(); 
+        booking_no = $('[name="booking_number"]').val(),
+        type = $('[name="type"]').val(),
+        value = $('[name="value"]').val();
 
     // let url = `{{ route('admin.export.rides') }}?from_date=${from_date}&to_date=${to_date}&booking_no=${booking_no}`;
     const baseUrl = "{{ route('admin.export.rides') }}";
 
-    let url = `${baseUrl}?from_date=${from_date}&to_date=${to_date}&booking_number=${booking_no}`;
+    let url = `${baseUrl}?from_date=${from_date}&to_date=${to_date}&booking_number=${booking_no}&type=${type}&value=${value}`;
     window.location.href = url;
 }
 </script>

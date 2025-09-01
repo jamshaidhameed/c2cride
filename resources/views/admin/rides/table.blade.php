@@ -6,6 +6,9 @@
     @php
         $rides_collection = collect($rides);
     @endphp
+    {{-- Filter  --}}
+    <input type="hidden" name="type" value="{{ isset($type) ? $type :'' }}">
+    <input type="hidden" name="value" value="{{ isset($value) ? $value :'' }}">
     <ul class="filters-list">
         <li><a data-status_id="all" class="@if(empty($type) || empty($value)) active_status @endif" href="javascript:void(0)">
                 <div class="status-title">Number of rides</div>
