@@ -1471,6 +1471,11 @@ class RideController extends Controller
 
         $rides = $merged->sortBy("date_time");
 
+        if ($request->filled('type') && $request->filled('value')) {
+            
+            $rides = $rides->where($request->input('type'),$request->input('value'));
+        }
+
         $file_name = 'rides_export_' . now()->format('Ymd_His') . '.xlsx';
         
         return Excel::download(new RidesExport($rides), $file_name);
