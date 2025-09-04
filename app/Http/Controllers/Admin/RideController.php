@@ -22,6 +22,8 @@ use App\Models\Vehicle;
 use App\Models\BecomePartner;
 use App\Models\UserActivityLogs;
 use App\Models\City2CityRide;
+use App\Models\Vendor;
+use App\Models\Suppliers;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -346,11 +348,14 @@ class RideController extends Controller
         
         
         if (!empty($driver_id) && $driver_id != 0) {
-            
+
+            $driver_info = User::where('id',$driver_id)->first();
+
             Ride::where('id', $request['ride_id'])->update([
             'status' => $request['status'],
             'driver_id' => $driver_id,
-            'updated_by' => Auth::user()->id
+            'updated_by' => Auth::user()->id,
+            'vendor_id' => !empty($driver_info) ? $driver_info->company_id : null
         ]);
         }else{
             Ride::where('id', $request['ride_id'])->update([
@@ -1315,8 +1320,8 @@ class RideController extends Controller
 
         // return $rides;
 
-
-        return view('admin.rides.daily',compact('rides'));
+        $vendors = Suppliers::where('status',1)->get();
+        return view('admin.rides.daily',compact('rides','vendors'));
     }
 
     public function rides_apply_filters(Request $request){
@@ -1397,6 +1402,12 @@ class RideController extends Controller
             
             $rides = $rides->where($request->input('type'),$request->input('value'));
         }
+
+        if ($request->filled("supplier_filter")) {
+            
+            $rides = $rides->where('supplier_id',$request->input('supplier_filter'));
+        }
+
         $type = $request->type;
         $value = $request->value;
         // return response()->json($rides);
@@ -1476,12 +1487,17 @@ class RideController extends Controller
             $rides = $rides->where($request->input('type'),$request->input('value'));
         }
 
+        if ($request->filled("supplier_filter")) {
+            
+            $rides = $rides->where('supplier_id',$request->input('supplier_filter'));
+        }
+
         $file_name = 'rides_export_' . now()->format('Ymd_His') . '.xlsx';
         
         return Excel::download(new RidesExport($rides), $file_name);
         
      } 
-
+ 
      public function update_ride_informations(Request $request){
 
         $request->validate(
@@ -1492,7 +1508,8 @@ class RideController extends Controller
                 'serial_number' => 'nullable',
                 'source_report' => 'nullable',
                 'ride_extra_details' => 'nullable',
-                'ride_from' => 'required'
+                'ride_from' => 'required',
+                'supplier_id' => $request->source_report === 'b2b' ? 'required' : 'nullable',
             ]
             );
 
@@ -1524,6 +1541,12 @@ class RideController extends Controller
                 if ($ride_info->ride_extra_details != $request->ride_extra_details) {
                    $activity ['ride_extra_details']= $request->ride_extra_details; 
                 }
+                if (!empty($request->vendor_id) && $ride_info->vendor_id != $request->vendor_id) {
+
+                    $vendor = Suppliers::where('id',$request->vendor_id)->first();
+                    
+                    $activity['supplier'] = !empty($vendor) ? $vendor->name : $request->vendor_id;
+                }
             }
 
             $encoded_json = json_encode($activity);
@@ -1543,7 +1566,8 @@ class RideController extends Controller
                 'fine_amount' =>  $request->fine_amount,
                 'source_report' =>  $request->source_report,
                 'remarks_by_c2c_team' => $request->remarks_by_c2c_team,
-                'ride_extra_details' =>  $request->ride_extra_details
+                'ride_extra_details' =>  $request->ride_extra_details,
+                'supplier_id' => $request->supplier_id
             ]
             );
 

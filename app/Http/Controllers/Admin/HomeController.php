@@ -21,11 +21,14 @@ use App\Models\BecomePartner;
 use App\Models\Coupons;
 use App\Models\CouponUser;
 use App\Models\Ride;
+use App\Models\Vendor;
+use App\Models\Suppliers;
 use App\Models\CarImages;
 use App\Models\BecomePartnerFiles;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\TravelAgencies;
 use App\Exports\PartnerExport;
+use App\Exports\EarningExport;
 
 class HomeController extends Controller
 {
@@ -630,10 +633,83 @@ class HomeController extends Controller
     public function earning_list(Request $request){
 
         $start_date = Carbon::now()->startOfMonth()->toDateString();
+        $today      = Carbon::now()->toDateString();
+
+        $drivers_list = User::where('role_id', 3)->orderBy('name', 'asc')->get();
+        $vendors      = Vendor::where('status', 1)->get();
+        $suppliers    = Suppliers::where('status', 1)->get();
+
+        $driver_id     = $request->driver_id;
+        $company_filter = $request->company_name;
+
+        // ✅ Fix: Always use date strings for filtering
+        if (!empty($request->from_date) && !empty($request->to_date)) {
+            $start_date = Carbon::parse($request->from_date)->toDateString();
+            $today      = Carbon::parse($request->to_date)->toDateString();
+        }
+
+        $rides = Ride::query();
+
+        if (!empty($driver_id)) {
+            $rides->where('driver_id', $driver_id);
+        } else {
+            $rides->whereNotNull("driver_id");
+        }
+        $status_filter = "";
+        if (!empty($request->status_filter)) {
+            $rides->where('status', $request->status_filter);
+            $status_filter = $request->status_filter;
+        } else {
+            $rides->where('status', 1);
+        }
+
+        if (!empty($company_filter)) {
+            $user_ids = User::where(['role_id' => 3, 'company_name' => $company_filter])
+                            ->pluck('id')
+                            ->toArray();
+            $rides->whereIn('driver_id', $user_ids);
+        }
+
+        if (!empty($request->payment_type)) {
+            $rides->where('payment_method', $request->payment_type);
+        }
+
+        if (!empty($request->vendor_id)) {
+            $rides->where('vendor_id', $request->vendor_id);
+        } elseif (!empty($request->supplier_id)) {
+            $rides->where('supplier_id', $request->supplier_id);
+        }
+
+        $rides = $rides->whereDate("date_time", '>=', $start_date)
+                    ->whereDate("date_time", '<=', $today)
+                    ->select(
+                        'driver_id',
+                        DB::raw("SUM(assigned_amount) as assigned_amount"),
+                        DB::raw('COUNT(id) as total_rides'),
+                        DB::raw('SUM(price) as total_amount')
+                    )
+                    ->whereNotNull('driver_id')
+                    ->groupBy('driver_id')
+                    ->orderBy('id', 'desc')
+                    ->with('driver', 'vendor', 'supplier')
+                    ->get();
+
+        $payment_filter = $request->payment_type;
+        $vendor_id = $request->vendor_id;
+        $vendor_filter = $vendor_id;
+        $supplier_filter = $request->supplier_id;
+        return view('admin.earning.index',compact('start_date','today','rides','drivers_list','driver_id','vendors','suppliers','company_filter','status_filter','payment_filter','vendor_id','vendor_filter','supplier_filter'));
+    }
+    public function export_earning(Request $request){
+
+        $start_date = Carbon::now()->startOfMonth()->toDateString();
         $today = Carbon::now()->toDateString();
 
         $drivers_list = User::where('role_id',3)->orderBy('name','asc')->get();
-        $company_names = User::where('role_id',3)->select('company_name')->orderBy('company_name','asc')->distinct()->get();
+        // $company_names = User::where('role_id',3)->select('company_name')->orderBy('company_name','asc')->distinct()->get();
+
+        $vendors = Vendor::where('status',1)->get();
+        $suppliers = Suppliers::where('status',1)->get();
 
         $driver_id = $request->driver_id;
         $company_filter = $request->company_name;
@@ -688,11 +764,29 @@ class HomeController extends Controller
             $payment_filter = $request->payment_type;
         }
 
-        $status_filter = $request->status_filter;
+        $vendor_id ="";
 
-       $rides =  $rides->whereBetween("ride_date",[$start_date,$today])->select('driver_id',DB::raw("SUM(assigned_amount) as assigned_amount"),DB::raw('count(id) as total_rides'),DB::raw('SUM(price) as total_amount'))->whereNotNull('driver_id')->groupBy('driver_id')->orderBy('id','desc')->with('driver')->get();
+        $filter = null;
 
-        return view('admin.earning.index',compact('start_date','today','rides','drivers_list','driver_id','company_names','company_filter','status_filter','payment_filter'));
+        if (!empty($request->vendor_id)) {
+            
+            $rides = $rides->where('vendor_id',$request->vendor_id);
+
+            $filter = "vendor";
+
+        }elseif (!empty($request->supplier_id)) {
+            
+            $rides = $rides->where('supplier_id',$request->supplier_id);
+        }
+
+       $rides =  $rides->whereDate("date_time", '>=', $start_date)
+                    ->whereDate("date_time", '<=', $today)->orderBy('id','desc')->with('driver','vendor','supplier')->get();
+
+       $file_name = 'earning_export_' . now()->format('Ymd_His') . '.xlsx';
+
+       return Excel::download(new EarningExport($rides, $filter), $file_name);
+
+
     }
 
     public function driver_rides($driver_id,$start_date,$end_date,$status){
@@ -750,7 +844,8 @@ class HomeController extends Controller
     public function driver_list(){
 
         $drivers_list = User::where('role_id',3)->get();
-        return view('admin.driver.index',compact('drivers_list'));
+        $vendors = Vendor::where('status',1)->get();
+        return view('admin.driver.index',compact('drivers_list','vendors'));
     }
     public function driver_insert(Request $request){
 
@@ -770,7 +865,7 @@ class HomeController extends Controller
                 'mobile_number' => $request->mobile_number,
                 'role_id' => 3,
                 'nick_name' => $request->nick_name,
-                'company_name' => $request->company_name,
+                'company_id' => $request->company_id,
                 'emirate' => $request->emirate,
                 'car_details' => $request->car_details
             ]
@@ -798,7 +893,7 @@ class HomeController extends Controller
                 'mobile_number' => $request->mobile_number,
                 'role_id' => 3,
                 'nick_name' => $request->nick_name,
-                'company_name' => $request->company_name,
+                'company_id' => $request->company_id,
                 'emirate' => $request->emirate,
                 'car_details' => $request->car_details
             ]

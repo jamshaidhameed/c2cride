@@ -99,4 +99,13 @@ Route::middleware(['auth', 'redirect_if_not_authenticated'])
 
          Route::get('get-activity-log/{ride_id}',[App\Http\Controllers\Admin\RideController::class,'activityLogs'])->name('user.activity.logs.list');
 
+         //Vendors CURD
+
+         Route::resource('vendor',App\Http\Controllers\Admin\VendorController::class);
+         Route::resource('supplier',App\Http\Controllers\Admin\SupplierController::class);
+
+         //Export Earning Data
+
+         Route::get('export-earning-data',[App\Http\Controllers\Admin\HomeController::class,'export_earning'])->name('export-earning-data');
+
     });

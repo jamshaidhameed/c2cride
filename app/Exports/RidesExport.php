@@ -51,7 +51,7 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping, WithCust
             'Ride From','Booking Number', 'Tve Booking Number','Serial Number','Ride Booking Time','Ride Time',
             'Pick Up Location','Dropoff Location','Client Name/ Email','Ride Extra details','Ride Amount',
             'Assigned amount','Payment Method','Payment link confirmation','Driver`s Tip',
-            'Company Name','Driver Name','Source','Remark by c2c team','Cancelled Ride/ Feedback',
+            'Company Name','Driver Name','Source','Supplier','Remark by c2c team','Cancelled Ride/ Feedback',
             'Fine Amount'
         ];
     }
@@ -60,6 +60,12 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping, WithCust
     {
         $remarks = $ride->cancel_remarks;
         $remarks_arr = !empty($remarks) ? explode(",", $remarks) : [];
+        $supplier = '';
+
+        if ($ride->ride_from == 'c2cride' && !empty($ride->supplier->name)){
+           $supplier = $ride->supplier->name;
+        }
+                                
 
         return [
             $ride->ride_from,
@@ -77,9 +83,10 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping, WithCust
             ucwords($ride->payment_method),
             $ride->payment_link_confirmation,
             $ride->tip_amount,
-            !empty($ride->driver->company_name) ? $ride->driver->company_name : "",
+            !empty($ride->driver->vendor->name) ? $ride->driver->vendor->name : "",
             !empty($ride->driver->name) ? $ride->driver->name : "",
             $ride->source_report,
+            $supplier,
             $ride->remarks_by_c2c_team,
             count($remarks_arr) > 0 ? implode(",", $remarks_arr) : "",
             $ride->fine_amount
