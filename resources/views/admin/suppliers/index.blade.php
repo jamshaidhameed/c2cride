@@ -22,9 +22,9 @@
             @include('admin.layout.links')
 
             <br> <br> 
-            <h3><strong>Drivers List</strong></h3>
+            <h3><strong>Suppliers List</strong></h3>
             <div class="d-flex justify-content-end mb-2">
-                <a href="javascript(0)" data-store_url="{{ url('admin/driver/insert') }}" data-save_url = "" class="btn btn-success btn-add float-right"><i class="icon wb-plus-circle"></i>Add Driver</a>
+                <a href="javascript(0)" data-store_url="{{ route('admin.supplier.store') }}" data-save_url = "" class="btn btn-success btn-add float-right"><i class="icon wb-plus-circle"></i>Add Supplier</a>
             </div>
            
          <div class="table-responsive">
@@ -33,40 +33,36 @@
                     <tr>
                         <th class="text-center">S.No</th>
                         <th>Name</th>
-                        <th>Nick Name</th>
                         <th>Company</th>
-                        <th class="text-center">Contact Number</th>
-                        <th class="text-center">Emirate</th>
-                        <th class="text-left">Car Details</th>
-                        <th class="text-center">Rides</th>
-                        <th class="text-center">Earning</th>
-                        <th class="text-left">Registered At</th>
+                        <th class="text-left">Contact Number</th>
+                        <th class="text-left">Email Address</th>
+                        <th class="text-left">Address</th>
+                        <th class="text-center">Status</th>
                         <th></th>
                         
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($drivers_list as $driver)
+                    @foreach($suppliers as $supplier)
                      <tr>
                         <td class="text-center">{{ $loop->iteration }}</td>
-                        <td>{{ $driver->name}}</td>
-                        <td>{{ $driver->nick_name }}</td>
-                        <td>{{ !empty($driver->vendor->name) ? $driver->vendor->name : ""}}</td>
-                        <td class="text-center">{{ $driver->mobile_number }}</td>
-                        <td class="text-left">{{ $driver->emirate }}</td>
-                        <td class="text-left">{{ $driver->car_details}}</td>
+                        <td>{{ $supplier->name}}</td>
+                        <td>{{ $supplier->company_name }}</td>
+                        <td class="text-left">{{ $supplier->contact }}</td>
+                        <td class="text-left">{{ $supplier->email }}</td>
+                        <td class="text-left">{{ $supplier->address}}</td>
                         <td class="text-center">
-                            {{ \App\Models\Ride::driver_rides($driver->id) }}
-                        </td>
-                        <td class="text-center">
-                            {{ number_format(\App\Models\Ride::driver_earning($driver->id),2)}} AED
+                            <div class="gerenric-table-desktop">
+                            @if($supplier->status == 1)
+                            <span class="confirm-ride cmpt-green" style=" color:aliceblue !important;min-width: 35px;padding: 10px;">Active</span>
+                            @else
+                            <span class="confirm-ride pending-yellow" style=" color:aliceblue !important;min-width: 35px;padding: 10px;">Inactive</span>
+                            @endif
+                            </div>
                         </td>
                         <td>
-                            {{ date_format(date_create($driver->created_at),'d-m-Y h:i A')}}
-                        </td>
-                        <td>
-                            <a href="" data-update_url ="{{ url('admin/driver/update/'.$driver->id) }}" data-id="{{ $driver->id}}" data-get_url="{{ url('admin/driver/'.$driver->id)}}" type="button" class="btn btn-primary driver-edit">Edit</a>
-                                <a href="{{ route('admin.driver.delete',$driver->id) }}" onclick="return confirm(`Are you sure to Delete the Record ? `)" type="button" class="btn btn-danger">Delete</a>
+                            <a href="" data-update_url ="{{ route('admin.supplier.update',$supplier->id) }}" data-id="{{ $supplier->id}}" data-get_url="{{ route('admin.supplier.show',$supplier->id) }}" type="button" class="btn btn-primary vendor-edit">Edit</a>
+                                <a href="{{ route('admin.supplier.destroy',$supplier->id) }}" type="button" class="btn btn-danger" id="delete-record">Delete</a>
                         </td>
                      </tr>
                     @endforeach
@@ -100,36 +96,37 @@
                                 <label for="" class="form-control-label">Name</label>
                                 <input type="text" name="name" id="" class="form-control" value="" required>
                             </div>
-                            <div class="form-group">
-                                <label for="" class="form-control-label">Company Name</label>
-                                <select name="company_id" id="" class="form-control" required>
-                                    <option value="">Please Choose</option>
-                                    @foreach ($vendors as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+                            
                             
                             <div class="form-group">
-                                <label for="" class="form-control-label">Emirate</label>
-                                <input type="text" name="emirate" id="" class="form-control" value="">
+                                <label for="" class="form-control-label">Email Address</label>
+                                <input type="email" name="email" id="" class="form-control" value="" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="" class="form-control-label">Status</label>
+                                <select name="status" id="" class="form-control" required>
+                                    <option value="">Please Choose</option>
+                                    <option value="1">Active</option>
+                                    <option value="0">In Active</option>
+                                </select>
                             </div>
                             {{-- End --}}
                         </div>
                         <div class="col col-md-6">
                             {{-- Start --}}
                             <div class="form-group">
-                                <label for="" class="form-control-label">Nick Name</label>
-                                <input type="text" name="nick_name" id="" class="form-control" value="" required>
+                                <label for="" class="form-control-label">Company Name</label>
+                                <input type="text" name="company_name" id="" class="form-control" value="" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="" class="form-control-label">Contact</label>
+                                <input type="text" name="contact" id="" class="form-control" value="" required>
                             </div>
                             <div class="form-group">
-                                <label for="" class="form-control-label">Mobile</label>
-                                <input type="text" name="mobile_number" id="" class="form-control" value="" required>
-                            </div>
-                            <div class="form-group">
-                            <label for="" class="form-control-label">Car Details</label>
+                            <label for="" class="form-control-label">Address</label>
                             {{-- <input type="text" name="car_details" id="" class="form-control" value=""> --}}
-                            <textarea name="car_details" class="form-control" id="" cols="5" rows="3"></textarea>
+                            <textarea name="address" class="form-control" id="" cols="5" rows="3"></textarea>
                         </div>
                             {{-- <div class="form-group">
                                 <label for="" class="form-control-label">Email</label>
@@ -167,7 +164,7 @@
         var url = $(this).data('store_url');
 
         $('#driver').find('form').attr('action',url);
-        $('#driver').find('.modal-title').text('Add New Driver');
+        $('#driver').find('.modal-title').text('Add New Supplier');
         $('#driver').find('.btn-primary').text("Save");
         $('#driver').modal('show');
     });
@@ -178,7 +175,7 @@
 
         $.ajax({
             url: url,
-            type: "POST",
+            type: 'POST',
             data: form_data,
             contentType: false,
             cashe: false,
@@ -214,7 +211,7 @@
 
 
     //Edit Driver 
-    $(document).on('click','.driver-edit',function(e){
+    $(document).on('click','.vendor-edit',function(e){
         e.preventDefault();
 
        var get_url = $(this).data('get_url'),
@@ -232,18 +229,67 @@
                     if (data) {
                         
                         $('#driver').find('form').find('[name="name"]').val(data.name);
-                        $('#driver').find('form').find('[name="nick_name"]').val(data.nick_name);
-                        $('#driver').find('form').find('[name="mobile_number"]').val(data.mobile_number);
-                        $('#driver').find('form').find('[name="company_id"]').val(data.company_id);
-                        $('#driver').find('form').find('[name="emirate"]').val(data.emirate);
-                        $('#driver').find('form').find('[name="car_details"]').val(data.car_details);
-                        $('#driver').find('.modal-title').text('Update Driver Informations');
+                        $('#driver').find('form').find('[name="contact"]').val(data.contact);
+                        $('#driver').find('form').find('[name="company_name"]').val(data.company_name);
+                        $('#driver').find('form').find('[name="address"]').val(data.address);
+                        $('#driver').find('form').find('[name="email"]').val(data.email);
+                        $('#driver').find('form').find('[name="status"]').val(data.status);
+                        $('#driver').find('form').attr('method','put');
+                        $('#driver').find('.modal-title').text('Update Supplier Informations');
                         $('#driver').find('.btn-primary').text("Update");
+                        $('#driver').find('form').append('<input type="hidden" name="_method" value="PUT">');
                         $('#driver').modal('show');
                     }
                 }
             }
         )
+    });
+  </script>
+  <script>
+    $(document).on('click','#delete-record',function(e){
+        e.preventDefault();
+
+        let url = $(this).attr('href');
+
+        var confirmation = confirm("Are you sure you want to delete this item?");
+
+        if (!confirmation) {
+            return;
+        }
+
+        $.ajax({
+            type:'delete',
+            url:url,
+            dataType:'json',
+            data:{
+                _token:"{{ csrf_token() }}"
+            },
+            success: function (html) {
+            if (html.success) {
+               window.location.reload(true);
+            } else {
+                alert(html.message);
+            }
+            },
+            error: function (xhr, status, error) {
+                if (xhr.status === 419) {
+                location.reload(true);
+                } else if(xhr.status === 422) {
+                
+                // alert("Error: " + xhr.responseText);
+                    var error_text = "";
+                    $.each(xhr.responseJSON.errors, function (index, value) {
+                        // $('.errorMsgntainer').append('<span class="text-danger">'+value+'<span>'+'<br>');
+                        error_text += value+"\n";
+                    });
+                    
+                    alert(error_text);
+
+                }else{
+                    alert("Error: " + xhr.responseText);
+                }
+            },
+        })
     });
   </script>
 @endsection

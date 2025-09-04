@@ -27,7 +27,7 @@ class User extends Authenticatable
         'role_id',
         'address',
         'nick_name',
-        'company_name',
+        'company_id',
         'emirate',
         'car_details'
     ];
@@ -35,6 +35,9 @@ class User extends Authenticatable
     public function rides()
     {
         return $this->hasMany(Ride::class, 'user_id');
+    }
+    public function vendor(){
+        return $this->hasOne(Vendor::class,'id','company_id');
     }
 
     public function completeRides()

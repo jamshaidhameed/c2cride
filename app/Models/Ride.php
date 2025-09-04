@@ -65,7 +65,9 @@ class Ride extends Model
         'payment_link_confirmation',
         'source_report',
         'remarks_by_c2c_team',
-        'ride_extra_details'
+        'ride_extra_details',
+        'vendor_id',
+        'supplier_id'
     ];
 
     protected $with = 'ridetype';
@@ -83,6 +85,13 @@ class Ride extends Model
     function driver(){
         return $this->hasOne(User::class,'id','driver_id');
     }
+    function supplier(){
+        return $this->hasOne(Suppliers::class,'id','supplier_id');
+    }
+    function vendor(){
+        return $this->hasOne(Vendor::class,'id','vendor_id');
+    }
+    
     public static function driver_rides($id){
 
         return self::where('driver_id',$id)->count();

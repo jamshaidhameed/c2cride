@@ -64,19 +64,28 @@
                 <form action="{{ route('admin.rides.apply.filters') }}" method="post" id="apply_filters">
                     @csrf
                     <div class="row">
-                        <div class="col col-md-3">
+                        <div class="col col-md-2">
+                            <label for="" class="form-control-label">Supplier</label>
+                            <select name="supplier_filter" id="" class="form-control">
+                                <option value="">Supplier Filter</option>
+                                @foreach ($vendors as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col col-md-2">
                             <label for="" class="form-control-label">Booking Number</label>
                             <input type="text" name="booking_number" id="" class="form-control">
                         </div>
-                        <div class="col col-md-3">
+                        <div class="col col-md-2">
                             <label for="" class="form-control-label">From Date</label>
                             <input type="date" name="from_date" id="" class="form-control">
                         </div>
-                        <div class="col col-md-3">
+                        <div class="col col-md-2">
                             <label for="" class="form-control-label">To Date</label>
                             <input type="date" name="to_date" id="" class="form-control">
                         </div>
-                        <div class="col col-md-3">
+                        <div class="col col-md-2">
                             <button type="submit" class="btn btn-success btn-sm" style="    margin-top: 23px;">Apply Filter</button>
                         </div>
                     </div>
@@ -121,9 +130,24 @@
                         <input type="text" name="payment_link_confirmation" id="" class="form-control" value="">
                     </div>
                     <div class="form-group">
-                        <label for="" class="form-control-label">Remark by c2c team</label>
-                        <input type="text" name="remarks_by_c2c_team" id="" class="form-control" value="">
+                        <label for="" class="form-control-label">Source</label>
+                        
+                        <select name="source_report" id="source_report" class="form-control">
+                            <option value="">Please Choose</option>
+                            <option value="watsapp">Watsapp</option>
+                            <option value="b2b">B2B</option>
+                        </select>
                     </div>
+                    <div class="form-group" id="vendors" style="display: none;">
+                        <label for="" class="form-control-label">Supplier</label>
+                        <select name="supplier_id" id="supplier_id" class="form-control">
+                            <option value="">Please Choose</option>
+                            @foreach ($vendors as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
                 </div>
 
                 <div class="col col-md-6">
@@ -131,21 +155,17 @@
                         <label for="" class="form-control-label">Fine Amount	</label>
                         <input type="number" min="0" name="fine_amount" id="" class="form-control" value="">
                     </div>
-                    <div class="form-group">
-                        <label for="" class="form-control-label">Source</label>
-                        {{-- <input type="text" name="source_report" id="" class="form-control" value=""> --}}
-                        <select name="source_report" id="" class="form-control">
-                            <option value="">Please Choose</option>
-                            <option value="watsapp">Watsapp</option>
-                            <option value="b2b">B2B</option>
-                        </select>
-                    </div>
+                    
                     <div class="form-group">
                         <label for="" class="form-control-label">Extra Details</label>
                         <input type="text" name="ride_extra_details" id="" class="form-control" value="">
                     </div>
+                    <div class="form-group">
+                        <label for="" class="form-control-label">Remark by c2c team</label>
+                        <input type="text" name="remarks_by_c2c_team" id="" class="form-control" value="">
+                    </div>
                 </div>
-
+                
                </div>
             </div>
             <div class="modal-footer">
@@ -173,12 +193,13 @@
         to_date = $('[name="to_date"]').val(),
         booking_no = $('[name="booking_number"]').val(),
         type = $('[name="type"]').val(),
-        value = $('[name="value"]').val();
+        value = $('[name="value"]').val(),
+        supplier_filter = $('[name="supplier_filter"]').val();
 
     // let url = `{{ route('admin.export.rides') }}?from_date=${from_date}&to_date=${to_date}&booking_no=${booking_no}`;
     const baseUrl = "{{ route('admin.export.rides') }}";
 
-    let url = `${baseUrl}?from_date=${from_date}&to_date=${to_date}&booking_number=${booking_no}&type=${type}&value=${value}`;
+    let url = `${baseUrl}?from_date=${from_date}&to_date=${to_date}&booking_number=${booking_no}&type=${type}&value=${value}&supplier_filter=${supplier_filter}`;
     window.location.href = url;
 }
 </script>
@@ -268,5 +289,21 @@
             });
     });
 </script>
+<script>
+    function toggleVendorField() {
+        if ($('#source_report').val() === 'b2b') {
+            $('#vendors').show();
+            $('#vendor_id').prop('required', true);  // ✅ use prop
+        } else {
+            $('#vendors').hide();
+            $('#vendor_id').prop('required', false); // ✅ remove required
+        }
+    }
 
+    // Run once on page load (in case of edit forms)
+    toggleVendorField();
+
+    // Run on change
+    $('#source_report').on('change', toggleVendorField);
+</script>
 @endsection

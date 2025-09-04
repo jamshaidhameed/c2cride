@@ -3,9 +3,9 @@
    <meta name="description" content="
     @if($type == 'Travel Agencies')
      Travel agencies can now partner with C2C Ride for premium chauffeur services in UAE.
-    @else if($type =='Corporations')
+    @elseif($type =='Corporations')
      Book corporate transport for events, meetings, and business travel with C2C Ride.
-    @else if($type == 'Holiday Homes')
+    @elseif($type == 'Holiday Homes')
      Get smooth and safe transport for your holiday home stays in UAE. Book C2C Ride.
     @endif
    " />
@@ -13,9 +13,9 @@
 @section('title')
     @if($type == 'Travel Agencies')
       Travel Agencies Partnership | Collaborate with C2C Ride
-    @else if($type == 'Corporations')
+    @elseif($type == 'Corporations')
      Corporate Chauffeur Services in UAE | C2C Ride
-    @else if($type == 'Holiday Homes')
+    @elseif($type == 'Holiday Homes')
     Holiday Home Transport Services in UAE | C2C Rides
     @endif
 @endsection

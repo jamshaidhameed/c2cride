@@ -88,6 +88,7 @@
                         <th>Company Name</th>
                         <th>driver Name </th>
                         <th>Source</th>
+                        <th>Vendor</th>
                         <th>Remark by c2c team</th>
                         <th>Cancelled Ride/ Feedback</th>
                         <th>Fine Amount</th>
@@ -151,6 +152,11 @@
                                 @endif
                             </td>
                             <td>{{ $ride->source_report }}</td>
+                            <td>
+                                @if ($ride->ride_from == 'c2cride' && !empty($ride->supplier->name))
+                                    {{ $ride->supplier->name }}
+                                @endif
+                            </td>
                             <td>{{ $ride->remarks_by_c2c_team }}</td>
                             <td>
                                 @php
@@ -191,6 +197,7 @@
                         <td></td>
                         <td></td>
                         <td><strong>{{ $tip_amount}}</strong></td>
+                        <td></td>
                         <td></td>
                         <td></td>
                         <td></td>
