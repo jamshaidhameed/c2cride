@@ -32,9 +32,9 @@
                 <thead>
                     <tr>
                         <th class="text-center">S.No</th>
-                        <th>Name</th>
+                        <th>Name (Contact Person)</th>
                         <th>Company</th>
-                        <th class="text-left">Contact Number</th>
+                        <th class="text-left">Phone</th>
                         <th class="text-left">Email Address</th>
                         <th class="text-left">Address</th>
                         <th class="text-center">Status</th>
@@ -93,7 +93,7 @@
                         <div class="col col-md-6">
                             {{-- Start --}}
                             <div class="form-group">
-                                <label for="" class="form-control-label">Name</label>
+                                <label for="" class="form-control-label">Name (Contact Person)</label>
                                 <input type="text" name="name" id="" class="form-control" value="" required>
                             </div>
                             
@@ -120,7 +120,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="" class="form-control-label">Contact</label>
+                                <label for="" class="form-control-label">Phone</label>
                                 <input type="text" name="contact" id="" class="form-control" value="" required>
                             </div>
                             <div class="form-group">
