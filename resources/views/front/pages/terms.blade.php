@@ -46,6 +46,12 @@
                                                 data-rel=".terms_tab5">
                                                 5 -Cancellations & Refunds </a>
                                         </li>
+
+                                         <li>
+                                            <a class="termsTab_link" href="javascript:void(0)"
+                                                data-rel=".terms_tab6">
+                                                6 -Kilometer Usage Policy </a>
+                                        </li>
                                         {{-- <li>
                                             <a class="termsTab_link" href="javascript:void(0)"
                                                 data-rel=".terms_tab6">
@@ -221,6 +227,34 @@
                                         These Terms are governed by the laws of the United Arab Emirates. Any disputes arising from use of the C2C Ride platform will fall under the jurisdiction of UAE courts.
                                     </p>
                                 </div>
+
+
+
+
+
+
+                                 <div class="terms_sec terms_tab6">
+                                    <h2> Kilometer Usage Policy </h2>
+                                    
+                                    <p>
+                                       
+
+                                       - For hourly bookings, the maximum allowance is 60 km per hour. <br/>
+
+                                       - For 10-hour bookings, the maximum allowance is 600 km. <br/>
+
+                                       - For City Tours (Half Day), the maximum allowance is 300 km. <br/>
+
+                                       - For City Tours (Full Day), the maximum allowance is 600 km. <br/>
+
+                                       - Any usage exceeding the above-mentioned limits will incur additional charges, which will be applied based on the selected car category.
+                                    </p>
+
+                                    
+                                </div>
+
+
+
 
                                 <div class="terms_sec terms_tab6">
                                     <h2> Contact Us </h2>

@@ -686,11 +686,12 @@ class HomeController extends Controller
                         'driver_id',
                         DB::raw("SUM(assigned_amount) as assigned_amount"),
                         DB::raw('COUNT(id) as total_rides'),
-                        DB::raw('SUM(price) as total_amount')
+                        DB::raw('SUM(price) as total_amount'),
+                        DB::raw('MAX(id) AS last_ride_id')
                     )
                     ->whereNotNull('driver_id')
                     ->groupBy('driver_id')
-                    ->orderBy('id', 'desc')
+                    ->orderByDesc('last_ride_id') 
                     ->with('driver', 'vendor', 'supplier')
                     ->get();
 
