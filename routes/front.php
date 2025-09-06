@@ -313,3 +313,5 @@ Route::get('guest-booking',function(){
 
 
 Route::get('/copoun-by-code/',[App\Http\Controllers\Front\HomeController::class,'get_copon_code'])->name('get.copon.code');
+
+Route::get('/daily-rides-sent-email',[App\Http\Controllers\Export\RidesController::class,'export_daily_earning']);

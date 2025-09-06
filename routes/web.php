@@ -25,6 +25,9 @@ Route::post('password/reset/post',[App\Http\Controllers\Auth\password\ForgotPass
 Route::get('/reset-password/{token}', [App\Http\Controllers\Auth\password\ForgotPasswordController::class, 'showResetForm'])->name('custom.password.reset');
 Route::post('/reset-password', [App\Http\Controllers\Auth\password\ForgotPasswordController::class, 'resetPassword'])->name('custom.password.update');
 
+//Sent Daily Rides Report via email
+
+
 //Cashe Clear
 
 Route::get('/cache/clear',function(){
