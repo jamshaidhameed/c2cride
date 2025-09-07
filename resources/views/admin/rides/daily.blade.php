@@ -46,6 +46,15 @@
     color: white;
    }
 
+   #errorBox ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    }
+    #errorBox {
+        text-align: left !important;
+    }
+
 </style>
 @endsection
 @section('content')
@@ -113,11 +122,13 @@
                 <h5 class="modal-title" id="largeModalLabel">Edit Ride</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('admin.update.ride.informaitons') }}" method="POST">
+            <form action="{{ route('admin.update.ride.informaitons') }}" method="POST" id="update-ride-form">
                 @csrf 
                 <input type="hidden" name="ride_id" value="">
                 <input type="hidden" name="ride_from" value="">
             <div class="modal-body">
+                
+               <div id="errorBox" class="alert alert-danger d-none"></div>
                <div class="row">
 
                 <div class="col col-md-6">
@@ -313,5 +324,60 @@
 
     // Run on change
     $('#source_report').on('change', toggleVendorField);
+</script>
+<script>
+    $(document).on('submit','#update-ride-form',function(e){
+
+        let isValid = true;
+        let errorMessages = [];
+        
+
+        if ($('input[name="tve_booking_number"]').val().trim() === "") {
+            isValid = false;
+            errorMessages.push("TVE Booking Number is required.");
+        }
+
+        if ($('input[name="payment_link_confirmation"]').val().trim() === "") {
+            isValid = false;
+            errorMessages.push("Payment link confirmation is required.");
+        }
+
+        if ($('input[name="stripe_transaction_number"]').val().trim() === "") {
+            isValid = false;
+            errorMessages.push("Stripe Transaction Number is required.");
+        }
+
+        if ($('#source_report').val().trim() === "") {
+            isValid = false;
+            errorMessages.push("Please select a Source.");
+        }
+
+        let fineAmount = $('input[name="fine_amount"]').val().trim();
+        if (fineAmount === "" || isNaN(fineAmount) || parseFloat(fineAmount) < 0) {
+            isValid = false;
+            errorMessages.push("Fine Amount must be a valid number greater than or equal to 0.");
+        }
+
+        if ($('#vendors').is(':visible') && $('#supplier_id').val().trim() === "") {
+            isValid = false;
+            errorMessages.push("Please choose a Supplier.");
+        }
+
+        if (!isValid) {
+            let errorHtml = "<ul>";
+            errorMessages.forEach(function(msg){
+                errorHtml += "<li>" + msg + "</li>";
+            });
+            errorHtml += "</ul>";
+
+            $("#errorBox")
+                .removeClass("d-none")
+                .html(errorHtml);
+
+            e.preventDefault();
+        } else {
+            $("#errorBox").addClass("d-none").html(""); // hide error box if valid
+        }
+    });
 </script>
 @endsection
