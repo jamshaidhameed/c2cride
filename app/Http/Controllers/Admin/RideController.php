@@ -1597,7 +1597,8 @@ class RideController extends Controller
                 'payment_link_confirmation' => $request->payment_link_confirmation,
                 'source_report' => $request->source_report,
                 'remarks_by_c2c_team' => $request->remarks_by_c2c_team,
-                'ride_extra_details' => $request->ride_extra_details
+                'ride_extra_details' => $request->ride_extra_details,
+                'stripe_transaction_number' => $request->stripe_transaction_number
             ]
             );
     }
