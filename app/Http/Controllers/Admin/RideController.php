@@ -1547,6 +1547,10 @@ class RideController extends Controller
                     
                     $activity['supplier'] = !empty($vendor) ? $vendor->name : $request->vendor_id;
                 }
+                if ($ride_info->stripe_transaction_number != $request->stripe_transaction_number) {
+                    
+                    $activity['stripe_transaction_number'] = $request->stripe_transaction_number;
+                }
             }
 
             $encoded_json = json_encode($activity);
@@ -1567,7 +1571,8 @@ class RideController extends Controller
                 'source_report' =>  $request->source_report,
                 'remarks_by_c2c_team' => $request->remarks_by_c2c_team,
                 'ride_extra_details' =>  $request->ride_extra_details,
-                'supplier_id' => $request->supplier_id
+                'supplier_id' => $request->supplier_id,
+                'stripe_transaction_number' => $request->stripe_transaction_number
             ]
             );
 

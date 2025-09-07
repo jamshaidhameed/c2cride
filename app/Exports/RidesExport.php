@@ -50,7 +50,7 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping, WithCust
         return [
             'Ride From','Booking Number', 'Tve Booking Number','Serial Number','Ride Booking Time','Ride Time',
             'Pick Up Location','Dropoff Location','Client Name/ Email','Ride Extra details','Ride Amount',
-            'Assigned amount','Payment Method','Payment link confirmation','Driver`s Tip',
+            'Assigned amount','Payment Method','Payment link confirmation','Stripe Transaction Number','Driver`s Tip',
             'Company Name','Driver Name','Source','Supplier','Remark by c2c team','Cancelled Ride/ Feedback',
             'Fine Amount'
         ];
@@ -82,6 +82,7 @@ class RidesExport implements FromCollection, WithHeadings, WithMapping, WithCust
             $ride->assigned_amount,
             ucwords($ride->payment_method),
             $ride->payment_link_confirmation,
+            $ride->stripe_transaction_number,
             $ride->tip_amount,
             !empty($ride->driver->vendor->name) ? $ride->driver->vendor->name : "",
             !empty($ride->driver->name) ? $ride->driver->name : "",

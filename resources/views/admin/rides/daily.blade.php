@@ -130,6 +130,10 @@
                         <input type="text" name="payment_link_confirmation" id="" class="form-control" value="">
                     </div>
                     <div class="form-group">
+                        <label for="" class="form-control-label">Stripe Transaction Number</label>
+                        <input type="text" class="form-control" name="stripe_transaction_number" value="">
+                    </div>
+                    <div class="form-group">
                         <label for="" class="form-control-label">Source</label>
                         
                         <select name="source_report" id="source_report" class="form-control">
@@ -138,15 +142,8 @@
                             <option value="b2b">B2B</option>
                         </select>
                     </div>
-                    <div class="form-group" id="vendors" style="display: none;">
-                        <label for="" class="form-control-label">Supplier</label>
-                        <select name="supplier_id" id="supplier_id" class="form-control">
-                            <option value="">Please Choose</option>
-                            @foreach ($vendors as $item)
-                                <option value="{{ $item->id }}">{{ $item->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    
+                    
                     
                 </div>
 
@@ -163,6 +160,15 @@
                     <div class="form-group">
                         <label for="" class="form-control-label">Remark by c2c team</label>
                         <input type="text" name="remarks_by_c2c_team" id="" class="form-control" value="">
+                    </div>
+                    <div class="form-group" id="vendors" style="display: none;">
+                        <label for="" class="form-control-label">Supplier</label>
+                        <select name="supplier_id" id="supplier_id" class="form-control">
+                            <option value="">Please Choose</option>
+                            @foreach ($vendors as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
                 
@@ -240,6 +246,7 @@
             source_report = $(this).data("source_report"),
             remarks_by_c2c_team = $(this).data("remarks_by_c2c_team"),
             ride_extra_details = $(this).data("ride_extra_details"),
+            stripe_transaction_number = $(this).data('stripe_transaction_number'),
             ride_from = $(this).data("ride_from");
         $('#largeModal').find('form').find('[name="ride_id"]').val(id);
         $('#largeModal').find('form').find('[name="tve_booking_number"]').val(tve_booking_number);
@@ -249,6 +256,7 @@
         $('#largeModal').find('form').find('[name="remarks_by_c2c_team"]').val(remarks_by_c2c_team);
         $('#largeModal').find('form').find('[name="ride_extra_details"]').val(ride_extra_details);
         $("#largeModal").find("form").find('[name="ride_from"]').val(ride_from);
+        $("#largeModal").find("form").find('[name="stripe_transaction_number"]').val(stripe_transaction_number);
         $('#largeModal').modal('show');
     })
 </script>

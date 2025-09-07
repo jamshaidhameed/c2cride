@@ -67,7 +67,8 @@ class Ride extends Model
         'remarks_by_c2c_team',
         'ride_extra_details',
         'vendor_id',
-        'supplier_id'
+        'supplier_id',
+        'stripe_transaction_number'
     ];
 
     protected $with = 'ridetype';

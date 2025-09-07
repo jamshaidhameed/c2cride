@@ -84,6 +84,7 @@
                         <th>Assigned amount</th>
                         <th>Payment Method</th>
                         <th>Payment link confirmation</th>
+                        <th>Stripe Transaction Number</th>
                         <th>Driver's Tip</th>
                         <th>Company Name</th>
                         <th>driver Name </th>
@@ -141,6 +142,7 @@
                             <td>{{ $ride->assigned_amount }}</td>
                             <td>{{ ucwords($ride->payment_method) }}</td>
                             <td>{{ $ride->payment_link_confirmation }}</td>
+                            <td>{{ $ride->stripe_transaction_number }}</td>
                             <td>{{ $ride->tip_amount }}</td>
                             <td>@if ($ride->ride_from == "c2cride")
                                 {{ !empty($ride->driver->company_name) ? $ride->driver->company_name : "" }}
@@ -173,7 +175,7 @@
                             <td>
                                 <div class="table-action">
                                     <a class="edit-booking" data-ride_id="{{$ride->id}}" href="javascript:void(0)" data-tve_booking_number="{{ $ride->tve_booking_number}}" data-fine_amount="{{ $ride->fine_amount }}" data-payment_link_confirmation="{{ $ride->payment_link_confirmation }}" data-source_report = "{{ $ride->source_report }}" data-remarks_by_c2c_team="{{ $ride->remarks_by_c2c_team }}" data-ride_extra_details = "{{ $ride->ride_extra_details}}" data-ride_from="{{ $ride->ride_from}}"><img src="{{asset('images/edit_icon_t.svg')}}" alt=""></a>
-                                    <a target="_blank" class="view-change-log" href="{{ route('admin.user.activity.logs.list',$ride->id) }}" data-ride_id = "{{ $ride->id }}">
+                                    <a target="_blank" class="view-change-log" href="{{ route('admin.user.activity.logs.list',$ride->id) }}" data-ride_id = "{{ $ride->id }}" data-stripe_transaction_number="{{ $ride->stripe_transaction_number}}">
                                         <img src="{{ asset('images/calender_icon_t.svg') }}" alt="">
                                     </a>
                                 </div>
@@ -194,6 +196,7 @@
                         <td></td>
                         <td><strong>{{ $total_ride_amount}}</strong></td>
                         <td><strong>{{ $assignmed_amount}}</strong></td>
+                        <td></td>
                         <td></td>
                         <td></td>
                         <td><strong>{{ $tip_amount}}</strong></td>

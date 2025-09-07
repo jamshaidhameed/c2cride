@@ -42,6 +42,7 @@ class EarningExport implements FromCollection, WithHeadings, WithMapping
             'Booking no',
             'Booking Date',
             'Ride Date',
+            'Stripe Transaction Number',
         ];
 
         // Add Assigned Amount if filter is vendor
@@ -67,7 +68,7 @@ class EarningExport implements FromCollection, WithHeadings, WithMapping
             $ride->booking_code,
             Carbon::parse($ride->created_at)->format("Y-m-d h:i A"),
             Carbon::parse($ride->date_time)->format("Y-m-d h:i A"),
-            
+            $ride->stripe_transaction_number,
         ];
 
         // Add Assigned Amount if filter is vendor
