@@ -239,7 +239,7 @@
                                     <p>
                                        
 
-                                       - For hourly bookings, the maximum allowance is 60 km per hour. <br/>
+                                       - For hourly bookings, the maximum allowance is 50 km per hour. <br/>
 
                                        - For 10-hour bookings, the maximum allowance is 600 km. <br/>
 
