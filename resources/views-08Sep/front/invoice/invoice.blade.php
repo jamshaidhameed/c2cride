@@ -62,7 +62,7 @@
                                                 <small
                                                     style="max-width: 250px;  display: block; text-transform: uppercase; font-size: 1em;  border-bottom: 1px solid #DFDFDF; color: #000; padding: 0px; margin:0px 0px 6px 0px;">BILL
                                                     TO:</small>
-                                                {{ $ride->display_name }}<br>
+                                                {{ $user->name }}<br>
                                                 {{ $ride->mobile_number }} <br>
                                                 {{ $ride->email }}
                                             </td>

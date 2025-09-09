@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>C2CRides-Invoice</title>
+
+    <!-- google fonts sora -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet">
+    <!-- end google fonts -->
+
+    <!-- Favicon -->
+
+    <link rel="icon" type="image/png" href="{{ public_path('front/images/favicon/favicon-96x96.png') }}" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="{{ public_path('front/images/favicon/favicon.svg') }}" />
+    <link rel="shortcut icon" href="{{ public_path('front/images/favicon/favicon.ico') }}" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ public_path('front/images/favicon/apple-touch-icon.png') }}" />
+    <meta name="apple-mobile-web-app-title" content="MyWebSite" />
+    <link rel="manifest" href="{{ public_path('front/images/favicon/site.webmanifest') }}" />
+    <!--  -->
+
+    <!-- slider css -->
+    <link rel="stylesheet" href="{{ public_path('front/css/style.css?version=11') }}">
+    <link rel="stylesheet" href="{{ public_path('front/css/responsive.css?version=11') }}">
+
+    <style>
+        
+/* invoice screen css */
+
+.invoice-container {  max-width: 800px; margin: auto; border-top: 10px solid var(--pg_color);  border-bottom: 10px solid var(--pg_color); padding: 50px 20px; font-size: 14px; color: var(--black); min-width: 800px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.25);
+
+  --invoiceSecGap: 34px;
+}
+
+.invoiceHeader{ width: 100%; display: flex; justify-content: space-between; align-items: flex-start;}
+
+.invoiceHeader_right{ margin-left: auto; padding-left: 30px; display: flex; align-items: center; flex-direction: column; gap: 20px; }
+
+.invoiceHeader_right figure{ display: block; max-width: 130px;}
+.invoiceHeader_right figure img{ display: block; max-width: none; width: 100%; height: auto;}
+
+.invoiceHeader_right span{ display: block; padding: 0px 10px 6px 10px; font-size: 1.2em; border-bottom: 1px solid var(--border_color); color: var(--black);}
+
+.invoiceHeader_details{ width: auto;}
+
+.invoiceHeader_details h3{ font-size: 1.6em; font-weight: 600; line-height: 1.2em; padding-bottom: var(--invoiceSecGap);}
+.invoiceHeader_details h3 span{ display: block;}
+
+.invoiceHeader_details p{  font-size: 1.2em; line-height: 1.4em; }
+
+.invoiceHeader_details p small{ display: block; text-transform: uppercase; font-size: 1em;  border-bottom: 1px solid var(--border_color); color: var(--black); margin-bottom: 6px;}
+
+.invoiceDetails_pad{  padding-bottom: var(--invoiceSecGap); }
+ 
+.invoiceTable {  width: 100%;  border-collapse: collapse; margin-bottom: var(--invoiceSecGap); }
+.invoiceTable thead{ background-color: var(--pg_color); color: var(--white);}
+
+.invoiceTable th, .invoiceTable td { border: 1px solid var(--border_color);  padding: 8px;  text-align: left;  line-height: 1.4em; height: 30px; }
+.invoiceTable th{ text-transform: uppercase; letter-spacing: 1px;}
+
+.invoiceTable tbody tr:nth-last-child(even){ background-color: var(--grey);}
+
+.invoiceTotal{ width: 100%; text-align: right;}
+.invoiceTotal th, .invoiceTotal td{ padding:2px 4px;}
+.invoiceTotal span{ display: block;  font-size: 1em;  padding:2px 4px; border-bottom: 1px solid var(--border_color); color: var(--black); }
+ 
+.invoiceTotal strong{ display: block; font-weight: 600;  font-size: 1.2em; border-bottom: 1px solid var(--border_color); color: var(--black);  padding:4px 4px;  }
+
+.invoiceTotal b{  font-weight: 600;  font-size: 1.2em;  }
+
+.invoiceFooter{ width: 100%; display: flex; justify-content: space-between; align-items: flex-start; }
+
+.invoiceFooter_stamp{ padding-right: 30px; margin-right: auto; max-width: 250px; }
+
+.invoiceFooter_stamp img{ display: block; width: 100%; height: auto;}
+
+.invoiceTotal tbody tr:last-child td{ padding-top: 10px;}
+@media print {
+  .invoice-container{ min-height: 100vh;}
+}
+    </style>
+</head>
+
+<body>
+    <div class="invoice-container">
+        <div class="invoiceHeader invoiceDetails_pad">
+            <div class="invoiceHeader_details">
+
+                <h3>
+                    <span>Invoice #{{ rand(1000, 9999) }}</span>
+                    <span>Booking #{{ $ride->booking_code}}</span>
+                </h3>
+                <div class="invoiceDetails_pad">
+                    <p>C2C Ride <br>
+                        Dubai, United Arab Emirates
+                    </p>
+                </div>
+
+                <div>
+                    <p><small>BILL TO:</small>
+                        {{ $user->name }}<br>
+                         {{ $ride->mobile_number }} <br>
+                        {{ $ride->email }}</p>
+                </div>
+
+
+            </div>
+            <div class="invoiceHeader_right">
+                <figure>
+                    <img src="{{ public_path('front/images/logo.svg') }}" alt="#">
+                </figure>
+                <span>
+                    {{ date_format(date_create($ride->ride_date),'d/m/Y') }}
+                </span>
+            </div>
+        </div>
+
+
+        <table class="invoiceTable">
+            <thead>
+                <tr>
+                    <th width="110">Service</th>
+                    <th>Description</th>
+                    <th width="110">Month</th>
+                    <th width="110">Unit Price</th>
+                    <th width="110">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Pick up point</td>
+                    <td>{{ $ride->source }} </td>
+                    <td>{{ date_format(date_create($ride->ride_date),'D, M d')}} {{ \Carbon\Carbon::parse($ride->ride_time)->format('h:i A') }} </td>
+                    <td>{{ number_format($ride->price,2) }} AED </td>
+                    <td>{{ number_format($ride->price,2) }} AED</td>
+                </tr>
+                <tr>
+                    <td>Drop of point</td>
+                    <td>{{ $ride->destination }} </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <!-- <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr> -->
+            </tbody>
+
+
+        </table>
+
+        <div class="invoiceFooter">
+            <div class="invoiceFooter_stamp">
+                <figure><img src="{{ public_path('images/c2c_stamp.png') }}" alt=""></figure>
+            </div>
+
+            <table class="invoiceTotal">
+                <tr>
+                    <td>Subtotal</td>
+                    <td width="110"><span>{{ number_format($ride->price + $ride->discount_amount,2) }} AED</span></td>
+                </tr>
+                <tr>
+                    <td>Discount</td>
+                    <td width="110"><span>{{ number_format($ride->discount_amount,2) }} AED</span></td>
+                </tr>
+                {{-- <tr>
+                    <td>Subtotal Less Discount</td>
+                    <td width="110"><span>{{ number_format($ride->price,2) }} AED</span></td>
+                </tr> --}}
+                <tr>
+                    <td>Tax Rate</td>
+                    <td width="110"><span>0.00%</span></td>
+                </tr>
+                <tr>
+                    <td>Total Tax</td>
+                    <td width="110"><span>0.00 AED</span></td>
+                </tr>
+                <tr>
+                    <td><b>Total</b></td>
+                    <td><strong>{{ number_format($ride->price,2) }} AED</strong></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
