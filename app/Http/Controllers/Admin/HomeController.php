@@ -781,7 +781,7 @@ class HomeController extends Controller
         }
 
        $rides =  $rides->whereDate("date_time", '>=', $start_date)
-                    ->whereDate("date_time", '<=', $today)->orderBy('id','desc')->with('driver','vendor','supplier')->get();
+                    ->whereDate("date_time", '<=', $today)->orderBy('date_time','asc')->with('driver','vendor','supplier')->get();
 
        $file_name = 'earning_export_' . now()->format('Ymd_His') . '.xlsx';
 

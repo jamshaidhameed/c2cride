@@ -705,7 +705,7 @@ class RideController extends Controller
         $type = $ride->ridetype->type;
         $request->session()->put("form_step_data.1", $request->all());
         $this->validate_step_one($ride, $request, $type);
-        $return_distance_duration = $this->calculate_distance($request->source, $request->destination);
+        // $return_distance_duration = $this->calculate_distance($request->source, $request->destination);
         $is_airport_ride = isThisAirportRide($request->source, $request->destination);
 
         $assigned_amount = $request->assigned_amount;
@@ -732,6 +732,7 @@ class RideController extends Controller
         $edit = Ride::where('id', $id)->first();
         $old_date = date('Y-m-d H:i:s', strtotime($edit->date_time));
         $date = date('Y-m-d H:i:s', strtotime($request->date_time));
+        $ride_date = Carbon::parse($request->date_time);
 
         if ($old_date == $date) {
             $data_time_new = $date;
@@ -764,7 +765,8 @@ class RideController extends Controller
             "price" => $price,
             'tour_city' => $request->tour_city,
             'payment_method' => $request->payment_method,
-            'assigned_amount' => $assigned_amount
+            'assigned_amount' => $assigned_amount,
+            'ride_date' => $ride_date
 
         ]);
         $editride = Ride::where('id', $id)->first();
